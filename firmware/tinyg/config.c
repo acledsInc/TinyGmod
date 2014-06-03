@@ -464,7 +464,7 @@ stat_t nv_persist_offsets(uint8_t flag)
 /*
  * nv_preprocess_float() - pre-promcess flaoting point number for units display and illegal valaues
  */
-/*
+
 void nv_preprocess_float(nvObj_t *nv)
 {
 	if (isnan((double)nv->value) || isinf((double)nv->value)) return; // illegal float values
@@ -474,7 +474,7 @@ void nv_preprocess_float(nvObj_t *nv)
 		}
 	}
 }
-*/
+
 /******************************************************************************
  * nvObj low-level object and list operations
  * nv_get_nvObj()		 - setup a nv object by providing the index

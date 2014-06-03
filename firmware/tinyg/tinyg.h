@@ -45,7 +45,7 @@
 /****** REVISIONS ******/
 
 #ifndef TINYG_FIRMWARE_BUILD
-#define TINYG_FIRMWARE_BUILD   		430.20	// Feature branch 430.10 - Testing
+#define TINYG_FIRMWARE_BUILD   		430.21	// Feature branch 430.10 - Folded in units mode corrections; re-introduced stepper busy test in planner.c, _exec_command()
 #endif
 #define TINYG_FIRMWARE_VERSION		0.97	// firmware major version
 #define TINYG_HARDWARE_PLATFORM		1		// hardware platform indicator (1 = Xmega series)
@@ -116,10 +116,10 @@ typedef char char_t;			// ARM/C++ version uses uint8_t as char_t
 #define GET_TOKEN_STRING(i,a) strcpy_P(a, (char *)&cfgArray[(index_t)i].token);
 
 // get text from an array of strings in PGM and convert to RAM string
-#define GET_TEXT_ITEM(b,a) strncpy_P(shared_buf,(const char *)pgm_read_word(&b[a]), MESSAGE_LEN-1)
+#define GET_TEXT_ITEM(b,a) strncpy_P(global_string_buf,(const char *)pgm_read_word(&b[a]), MESSAGE_LEN-1)
 
 // get units from array of strings in PGM and convert to RAM string
-#define GET_UNITS(a) 	   strncpy_P(shared_buf,(const char *)pgm_read_word(&msg_units[cm_get_units_mode(a)]), MESSAGE_LEN-1)
+#define GET_UNITS(a) 	   strncpy_P(global_string_buf,(const char *)pgm_read_word(&msg_units[cm_get_units_mode(a)]), MESSAGE_LEN-1)
 
 // IO settings
 #define STD_IN 	XIO_DEV_USB		// default IO settings
@@ -266,7 +266,7 @@ typedef uint8_t stat_t;
 extern stat_t status_code;				// allocated in main.c
 
 #define MESSAGE_LEN 80					// global message string storage allocation
-extern char shared_buf[];				// allocated in main.c
+extern char global_string_buf[];				// allocated in main.c
 
 char *get_status_message(stat_t status);
 

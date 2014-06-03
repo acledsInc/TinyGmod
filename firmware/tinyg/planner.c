@@ -213,12 +213,12 @@ void mp_queue_command(void(*cm_exec)(float[], float[]), float *value, float *fla
 
 static stat_t _exec_command(mpBuf_t *bf)
 {
-//	if (!stepper_isbusy()) {
+	if (!stepper_isbusy()) {
 		bf->cm_func(bf->value_vector, bf->flag_vector);	// 2 vectors used by callbacks
 		st_prep_null();									// Must call a null prep to keep the loader happy. 
 		if (mp_free_run_buffer())						// free buffer & perform cycle_end if planner is empty
 			cm_cycle_end();
-//	}
+	}
 	return (STAT_OK);
 }
 
