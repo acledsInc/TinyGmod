@@ -113,7 +113,9 @@ void run_canned_startup()	// uncomment in tinyg.h if you want to run this
 //	xio_queue_RX_string_usb("$test=99\n");		// run test file (doesn't work if text mode is disabled)
 //	xio_queue_RX_string_usb("{\"test\":99}\n");	// run test file
 //	xio_queue_RX_string_usb("{test:98}\n");		// run test file
-	xio_queue_RX_string_usb("{test:99}\n");		// run test file
+//	xio_queue_RX_string_usb("{test:99}\n");		// run test file
+
+	xio_queue_RX_string_usb("g0 x20\n");
 
 /* Configs and controls */
 //	xio_queue_RX_string_usb("$\n");				// print general group

@@ -45,7 +45,7 @@
 /****** REVISIONS ******/
 
 #ifndef TINYG_FIRMWARE_BUILD
-#define TINYG_FIRMWARE_BUILD   		430.14	// Feature branch 430.10 - mp_get_target_length() - VERIFIED
+#define TINYG_FIRMWARE_BUILD   		430.15	// Feature branch 430.10 - auto-run g0 x20
 #endif
 #define TINYG_FIRMWARE_VERSION		0.97	// firmware major version
 #define TINYG_HARDWARE_PLATFORM		1		// hardware platform indicator (1 = Xmega series)
@@ -54,7 +54,7 @@
 
 /****** COMPILE-TIME SETTINGS ******/
 
-#define __STEP_CORRECTION
+//#define __STEP_CORRECTION
 //#define __JERK_EXEC							// comment to use forward difference based exec vs jerk computed exec
 //#define __BLOCK_ANNEALING
 //#define __SIMULATION						// shorthand to keep from having to comment and uncomment the below:
@@ -69,6 +69,9 @@
 /****** DEVELOPMENT SETTINGS ******/
 
 #define __DIAGNOSTIC_PARAMETERS				// include diagnostics in config_app table
+
+#define __CANNED_STARTUP					// run any canned startup moves
+#define __DISABLE_PERSISTENCE				// disable EEPROM writes for faster simulation
 
 #ifdef __SIMULATION
   #define __CANNED_STARTUP					// run any canned startup moves
