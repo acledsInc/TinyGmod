@@ -213,9 +213,12 @@ void mp_queue_command(void(*cm_exec)(float[], float[]), float *value, float *fla
 
 static stat_t _exec_command(mpBuf_t *bf)
 {
-	bf->cm_func(bf->value_vector, bf->flag_vector);		// 2 vectors used by callbacks
-	st_prep_null();										// Must call a null prep to keep the loader happy. 
-	if (mp_free_run_buffer()) cm_cycle_end();			// free buffer & perform cycle_end if planner is empty
+	if (!stepper_isbusy()) {
+		bf->cm_func(bf->value_vector, bf->flag_vector);	// 2 vectors used by callbacks
+		st_prep_null();									// Must call a null prep to keep the loader happy. 
+		if (mp_free_run_buffer())						// free buffer & perform cycle_end if planner is empty
+			cm_cycle_end();
+	}
 	return (STAT_OK);
 }
 
@@ -350,8 +353,9 @@ void mp_unget_write_buffer()
 	mb.buffers_available++;
 }
 
-/*** WARNING: The calling routine must not use the write buffer once it has been queued. 
-			  Action may start on the buffer immediately, invalidating its contents ***/
+/*** WARNING: The routine calling mp_commit_write_buffer() must not use the write buffer 
+			  once it has been queued. Action may start on the buffer immediately, 
+			  invalidating its contents ***/
 
 void mp_commit_write_buffer(const uint8_t move_type)
 {
@@ -360,9 +364,9 @@ void mp_commit_write_buffer(const uint8_t move_type)
 	mb.q->buffer_state = MP_BUFFER_QUEUED;
 	mb.q = mb.q->nx;							// advance the queued buffer pointer
 	qr_request_queue_report(+1);				// request a QR and add to the "added buffers" count
-	st_request_exec_move();						// request a move exec if not busy
-												// the exec may result in the buffer being processed
-												// immediately and then freed  - invalidating the contents
+	st_request_exec_move();						// requests an exec if the runtime is not busy
+												// NB: BEWARE! the exec may result in the planner buffer being 
+												// processed immediately and then freed - invalidating the contents
 }
 
 mpBuf_t * mp_get_run_buffer() 

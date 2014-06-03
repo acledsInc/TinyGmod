@@ -72,10 +72,13 @@ stat_t mp_exec_move()
 	// Manage cycle and motion state transitions
 	// Cycle auto-start for lines only
 	if (bf->move_type == MOVE_TYPE_ALINE) {
-		if (cm.motion_state == MOTION_STOP) cm_set_motion_state(MOTION_RUN);
+		if (cm.motion_state == MOTION_STOP) 
+			cm_set_motion_state(MOTION_RUN);
 	}
-	if (bf->bf_func != NULL) { return (bf->bf_func(bf));} 	// run the move callback in the planner buffer
-	return(cm_hard_alarm(STAT_INTERNAL_ERROR));				// never supposed to get here
+	if (bf->bf_func != NULL) {
+		return (bf->bf_func(bf)); 				// run the move callback in the planner buffer
+	}
+	return(cm_hard_alarm(STAT_INTERNAL_ERROR));	// never supposed to get here
 }
 
 /*************************************************************************/

@@ -45,7 +45,7 @@
 /****** REVISIONS ******/
 
 #ifndef TINYG_FIRMWARE_BUILD
-#define TINYG_FIRMWARE_BUILD   		430.16	// Feature branch 430.10 - second attempt at restructuring loader - VERIFIES
+#define TINYG_FIRMWARE_BUILD   		430.17	// Feature branch 430.10 - deferring command execution via prep buffer - fails dwell test
 #endif
 #define TINYG_FIRMWARE_VERSION		0.97	// firmware major version
 #define TINYG_HARDWARE_PLATFORM		1		// hardware platform indicator (1 = Xmega series)
