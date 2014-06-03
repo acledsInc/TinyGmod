@@ -45,7 +45,7 @@
 /****** REVISIONS ******/
 
 #ifndef TINYG_FIRMWARE_BUILD
-#define TINYG_FIRMWARE_BUILD   		430.12	// Feature branch 430.10 - externalized st_request_load(); updated cm_set_move_times(); nv_preprocess_float() (stubbed)
+#define TINYG_FIRMWARE_BUILD   		430.13	// Feature branch 430.10 - gc_get_gc(); _exec_aline_segment()
 #endif
 #define TINYG_FIRMWARE_VERSION		0.97	// firmware major version
 #define TINYG_HARDWARE_PLATFORM		1		// hardware platform indicator (1 = Xmega series)

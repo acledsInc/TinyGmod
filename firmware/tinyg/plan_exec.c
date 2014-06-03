@@ -646,6 +646,7 @@ static stat_t _exec_aline_tail()
 
 static stat_t _exec_aline_segment()
 {
+	//	exec_debug_pin1 = 1;
 	uint8_t i;
 	float travel_steps[MOTORS];
 
@@ -655,12 +656,26 @@ static stat_t _exec_aline_segment()
 	// Don't do waypoint correction if you are going into a hold.
 
 	if ((--mr.segment_count == 0) && (mr.section_state == SECTION_2nd_HALF) &&
-		(cm.motion_state == MOTION_RUN) && (cm.cycle_state == CYCLE_MACHINING)) {
+	(cm.motion_state == MOTION_RUN) && (cm.cycle_state == CYCLE_MACHINING)) {
 		copy_vector(mr.gm.target, mr.waypoint[mr.section]);
-	} else {
+		// reset target_c?
+		} else {
 		float segment_length = mr.segment_velocity * mr.segment_time;
 		for (i=0; i<AXES; i++) {
-			mr.gm.target[i] = mr.position[i] + (mr.unit[i] * segment_length);
+			float new_offset = (mr.unit[i] * segment_length);
+
+			// Using the Kahan summation algorithm to mitigate floating-point errors
+			// Short form:
+			// mr.gm.target[i] = mr.position[i] + new_offset;
+
+			// Long form:
+			// Compute our offset including the previous roundoff error
+			float new_offset_corrected = new_offset - mr.position_c[i];
+			// Now add in our new_offset (corrected)
+			float new_target = mr.position[i] + new_offset_corrected;
+			// Now find and store our new roundoff error but subtracting all the tings we added up
+			mr.position_c[i] = (new_target - mr.position[i]) - new_offset_corrected;
+			mr.gm.target[i] = new_target;
 		}
 	}
 
@@ -683,15 +698,17 @@ static stat_t _exec_aline_segment()
 
 	// Call the stepper prep function
 
+//	exec_debug_pin1 = 0;
 	ritorno(st_prep_line(travel_steps, mr.following_error, mr.segment_time));
+//    exec_debug_pin1 = 1;
 	copy_vector(mr.position, mr.gm.target); 			// update position from target
 #ifdef __JERK_EXEC
 	mr.elapsed_accel_time += mr.segment_accel_time;		// this is needed by jerk-based exec (NB: ignored if running the body)
 #endif
+//	exec_debug_pin1 = 0;
 	if (mr.segment_count == 0) return (STAT_OK);		// this section has run all its segments
 	return (STAT_EAGAIN);								// this section still has more segments to run
 }
-
 #ifdef __cplusplus
 }
 #endif
