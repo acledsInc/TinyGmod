@@ -509,9 +509,7 @@ static void _load_move()
 
 		st_run.dda_ticks_downcount = st_pre.dda_ticks;
 		st_run.dda_ticks_X_substeps = st_pre.dda_ticks_X_substeps;
-#ifdef __AVR
-		TIMER_DDA.PER = st_pre.dda_period;
-#endif
+
 		//**** MOTOR_1 LOAD ****
 
 		// These sections are somewhat optimized for execution speed. The whole load operation
@@ -666,13 +664,23 @@ static void _load_move()
 #endif
 		//**** do this last ****
 
+		TIMER_DDA.PER = st_pre.dda_period;
 		TIMER_DDA.CTRLA = STEP_TIMER_ENABLE;				// enable the DDA timer
+//		st_prep_null();										// needed to shut off timers if no moves left
+		st_pre.exec_state = PREP_BUFFER_OWNED_BY_EXEC;		// we are done with the prep buffer - flip the flag back
+		st_request_exec_move();								// exec and prep next move
+		return;
+	}
 
 	// handle dwells
-	} else if (st_pre.move_type == MOVE_TYPE_DWELL) {
+	if (st_pre.move_type == MOVE_TYPE_DWELL) {
 		st_run.dda_ticks_downcount = st_pre.dda_ticks;
 		TIMER_DWELL.PER = st_pre.dda_period;				// load dwell timer period
  		TIMER_DWELL.CTRLA = STEP_TIMER_ENABLE;				// enable the dwell timer
+//		st_prep_null();										// needed to shut off timers if no moves left
+		st_pre.exec_state = PREP_BUFFER_OWNED_BY_EXEC;		// we are done with the prep buffer - flip the flag back
+		st_request_exec_move();								// exec and prep next move
+		return;
 	}
 
 	// all other cases drop to here (e.g. Null moves after Mcodes skip to here)
