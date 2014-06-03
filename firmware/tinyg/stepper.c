@@ -310,7 +310,6 @@ stat_t st_motor_power_callback() 	// called by controller
 ISR(TIMER_DWELL_ISR_vect) {								// DWELL timer interrupt
 	if (--st_run.dda_ticks_downcount == 0) {
 		TIMER_DWELL.CTRLA = STEP_TIMER_DISABLE;			// disable DWELL timer
-//		mp_end_dwell();									// free the planner buffer
 		_load_move();
 	}
 }
@@ -677,7 +676,7 @@ static void _load_move()
 		st_run.dda_ticks_downcount = st_pre.dda_ticks;
 		TIMER_DWELL.PER = st_pre.dda_period;				// load dwell timer period
  		TIMER_DWELL.CTRLA = STEP_TIMER_ENABLE;				// enable the dwell timer
-//		st_prep_null();										// needed to shut off timers if no moves left
+		st_prep_null();										// this stops the dwell from firing again
 		st_pre.exec_state = PREP_BUFFER_OWNED_BY_EXEC;		// we are done with the prep buffer - flip the flag back
 		st_request_exec_move();								// exec and prep next move
 		return;
