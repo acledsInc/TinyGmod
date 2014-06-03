@@ -311,7 +311,7 @@ enum prepBufferState {
  *	and error will grow instead of shrink (or oscillate).
  */
 #define STEP_CORRECTION_THRESHOLD	(float)2.00		// magnitude of forwarding error to apply correction (in steps)
-#define STEP_CORRECTION_FACTOR		(float)0.05		// factor to apply to step correction for a single segment
+#define STEP_CORRECTION_FACTOR		(float)0.25		// factor to apply to step correction for a single segment
 #define STEP_CORRECTION_MAX			(float)0.50		// max step correction allowed in a single segment
 #define STEP_CORRECTION_HOLDOFF		 	 	  6		// minimum number of segments to wait between error correction
 #define STEP_INITIAL_DIRECTION		DIRECTION_CW
@@ -400,7 +400,9 @@ typedef struct stPrepSingleton {
 	uint16_t magic_start;				// magic number to test memory integrity
 	volatile uint8_t exec_state;		// move execution state
 	uint8_t move_type;					// move type
-	uint8_t segment_ready;				// flag indicating the next segment is ready for loading
+//	uint8_t segment_ready;				// flag indicating the next segment is ready for loading
+	volatile uint8_t prep_ready;		// true when next segment is prepped and ready for loading
+	volatile uint8_t dda_running;		// true when dda is running a move or a dwell
 
 	uint16_t dda_period;				// DDA or dwell clock period setting
 	uint32_t dda_ticks;					// DDA or dwell ticks for the move
