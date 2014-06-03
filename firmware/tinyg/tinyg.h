@@ -45,7 +45,7 @@
 /****** REVISIONS ******/
 
 #ifndef TINYG_FIRMWARE_BUILD
-#define TINYG_FIRMWARE_BUILD   		430.13	// Feature branch 430.10 - gc_get_gc(); _exec_aline_segment()
+#define TINYG_FIRMWARE_BUILD   		430.14	// Feature branch 430.10 - mp_get_target_length() - VERIFIED
 #endif
 #define TINYG_FIRMWARE_VERSION		0.97	// firmware major version
 #define TINYG_HARDWARE_PLATFORM		1		// hardware platform indicator (1 = Xmega series)
