@@ -398,11 +398,10 @@ typedef struct stPrepMotor {
 
 typedef struct stPrepSingleton {
 	uint16_t magic_start;				// magic number to test memory integrity
-	volatile uint8_t exec_state;		// move execution state
+	volatile uint8_t prep_buffer_state;	// who ownes the prep buffer?
 	uint8_t move_type;					// move type
-//	uint8_t segment_ready;				// flag indicating the next segment is ready for loading
-	volatile uint8_t prep_ready;		// true when next segment is prepped and ready for loading
-	volatile uint8_t dda_running;		// true when dda is running a move or a dwell
+//	volatile uint8_t prep_ready;		// true when next segment is prepped and ready for loading
+//	volatile uint8_t dda_running;		// true when dda is running a move or a dwell
 
 	uint16_t dda_period;				// DDA or dwell clock period setting
 	uint32_t dda_ticks;					// DDA or dwell ticks for the move

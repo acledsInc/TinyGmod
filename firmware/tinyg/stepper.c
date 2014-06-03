@@ -102,7 +102,7 @@ void stepper_init()
 	TIMER_EXEC.INTCTRLA = TIMER_EXEC_INTLVL;	// interrupt mode
 	TIMER_EXEC.PER = EXEC_TIMER_PERIOD;			// set period
 
-	st_pre.exec_state = PREP_BUFFER_OWNED_BY_EXEC;
+	st_pre.prep_buffer_state = PREP_BUFFER_OWNED_BY_EXEC;
 	st_reset();									// reset steppers to known state
 }
 
@@ -387,7 +387,7 @@ ISR(TIMER_DDA_ISR_vect)
 #ifdef __AVR
 void st_request_exec_move()
 {
-	if (st_pre.exec_state == PREP_BUFFER_OWNED_BY_EXEC) {	// bother interrupting
+	if (st_pre.prep_buffer_state == PREP_BUFFER_OWNED_BY_EXEC) {// bother interrupting
 		TIMER_EXEC.PER = EXEC_TIMER_PERIOD;
 		TIMER_EXEC.CTRLA = EXEC_TIMER_ENABLE;				// trigger a LO interrupt
 	}
@@ -397,9 +397,9 @@ ISR(TIMER_EXEC_ISR_vect) {								// exec move SW interrupt
 	TIMER_EXEC.CTRLA = EXEC_TIMER_DISABLE;				// disable SW interrupt timer
 
 	// exec_move
-	if (st_pre.exec_state == PREP_BUFFER_OWNED_BY_EXEC) {
+	if (st_pre.prep_buffer_state == PREP_BUFFER_OWNED_BY_EXEC) {
 		if (mp_exec_move() != STAT_NOOP) {
-			st_pre.exec_state = PREP_BUFFER_OWNED_BY_LOADER; // flip it back
+			st_pre.prep_buffer_state = PREP_BUFFER_OWNED_BY_LOADER; // flip it back
 			st_request_load_move();
 		}
 	}
@@ -409,7 +409,7 @@ ISR(TIMER_EXEC_ISR_vect) {								// exec move SW interrupt
 #ifdef __ARM
 void st_request_exec_move()
 {
-	if (st_pre.exec_state == PREP_BUFFER_OWNED_BY_EXEC) {	// bother interrupting
+	if (st_pre.prep_buffer_state == PREP_BUFFER_OWNED_BY_EXEC) {// bother interrupting
 		exec_timer.setInterruptPending();
 	}
 }
@@ -418,9 +418,9 @@ namespace Motate {	// Define timer inside Motate namespace
 	MOTATE_TIMER_INTERRUPT(exec_timer_num)			// exec move SW interrupt
 	{
 		exec_timer.getInterruptCause();				// clears the interrupt condition
-		if (st_pre.exec_state == PREP_BUFFER_OWNED_BY_EXEC) {
+		if (st_pre.prep_buffer_state == PREP_BUFFER_OWNED_BY_EXEC) {
 			if (mp_exec_move() != STAT_NOOP) {
-				st_pre.exec_state = PREP_BUFFER_OWNED_BY_LOADER; // flip it back
+				st_pre.prep_buffer_state = PREP_BUFFER_OWNED_BY_LOADER; // flip it back
 				_request_load_move();
 			}
 		}
@@ -489,7 +489,7 @@ static void _load_move()
 	// So the initial load must also have this set to zero as part of initialization
 	if (st_run.dda_ticks_downcount != 0) return;						// exit if it's still busy
 
-	if (st_pre.exec_state != PREP_BUFFER_OWNED_BY_LOADER) {				// if there are no moves to load...
+	if (st_pre.prep_buffer_state != PREP_BUFFER_OWNED_BY_LOADER) {		// if there are no moves to load...
 		for (uint8_t motor = MOTOR_1; motor < MOTORS; motor++) {
 			st_run.mot[motor].power_state = MOTOR_POWER_TIMEOUT_START;	// ...start motor power timeouts
 		}
@@ -665,8 +665,8 @@ static void _load_move()
 
 		TIMER_DDA.PER = st_pre.dda_period;
 		TIMER_DDA.CTRLA = STEP_TIMER_ENABLE;				// enable the DDA timer
-//		st_prep_null();										// needed to shut off timers if no moves left
-		st_pre.exec_state = PREP_BUFFER_OWNED_BY_EXEC;		// we are done with the prep buffer - flip the flag back
+		st_prep_null();										// needed to shut off timers if no moves left
+		st_pre.prep_buffer_state = PREP_BUFFER_OWNED_BY_EXEC; // we are done with the prep buffer - flip the flag back
 		st_request_exec_move();								// exec and prep next move
 		return;
 	}
@@ -677,14 +677,14 @@ static void _load_move()
 		TIMER_DWELL.PER = st_pre.dda_period;				// load dwell timer period
  		TIMER_DWELL.CTRLA = STEP_TIMER_ENABLE;				// enable the dwell timer
 		st_prep_null();										// this stops the dwell from firing again
-		st_pre.exec_state = PREP_BUFFER_OWNED_BY_EXEC;		// we are done with the prep buffer - flip the flag back
+		st_pre.prep_buffer_state = PREP_BUFFER_OWNED_BY_EXEC; // we are done with the prep buffer - flip the flag back
 		st_request_exec_move();								// exec and prep next move
 		return;
 	}
 
 	// all other cases drop to here (e.g. Null moves after Mcodes skip to here)
 	st_prep_null();											// needed to shut off timers if no moves left
-	st_pre.exec_state = PREP_BUFFER_OWNED_BY_EXEC;			// flip it back
+	st_pre.prep_buffer_state = PREP_BUFFER_OWNED_BY_EXEC;	// flip it back
 	st_request_exec_move();									// exec and prep next move
 }
 
@@ -714,7 +714,7 @@ static void _load_move()
 stat_t st_prep_line(float travel_steps[], float following_error[], float segment_time)
 {
 	// trap conditions that would prevent queueing the line
-	if (st_pre.exec_state != PREP_BUFFER_OWNED_BY_EXEC) { return (cm_hard_alarm(STAT_INTERNAL_ERROR));	// never supposed to happen
+	if (st_pre.prep_buffer_state != PREP_BUFFER_OWNED_BY_EXEC) { return (cm_hard_alarm(STAT_INTERNAL_ERROR));	// never supposed to happen
 	} else if (isinf(segment_time)) { return (cm_hard_alarm(STAT_PREP_LINE_MOVE_TIME_IS_INFINITE));		// ever supposed to happen
 	} else if (isnan(segment_time)) { return (cm_hard_alarm(STAT_PREP_LINE_MOVE_TIME_IS_NAN));			// ever supposed to happen
 	}
