@@ -308,6 +308,7 @@ void nv_persist(nvObj_t *nv);		// main entry point for persistence
 // helpers
 uint8_t nv_get_type(nvObj_t *nv);
 stat_t nv_persist_offsets(uint8_t flag);
+void nv_preprocess_float(nvObj_t *nv);	// pre-process float values for units and illegal values
 
 index_t nv_get_index(const char_t *group, const char_t *token);
 index_t	nv_index_max(void);
@@ -328,7 +329,6 @@ stat_t set_int(nvObj_t *nv);		// set uint32_t integer value
 stat_t set_data(nvObj_t *nv);		// set uint32_t integer value blind cast
 stat_t set_flt(nvObj_t *nv);		// set floating point value
 stat_t set_flu(nvObj_t *nv);		// set floating point number with G20/G21 units conversion
-//stat_t get_flt(nvObj_t *nv);		// get floating point number with G20/G21 units conversion
 
 stat_t get_nul(nvObj_t *nv);		// get null value type
 stat_t get_ui8(nvObj_t *nv);		// get uint8_t value

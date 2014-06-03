@@ -47,7 +47,6 @@ static stRunSingleton_t st_run;
 /**** Setup local functions ****/
 
 static void _load_move(void);
-static void _request_load_move(void);
 static void _set_motor_power_level(const uint8_t motor, const float power_level);
 
 // handy macro
@@ -402,7 +401,7 @@ ISR(TIMER_EXEC_ISR_vect) {								// exec move SW interrupt
 	if (st_pre.exec_state == PREP_BUFFER_OWNED_BY_EXEC) {
 		if (mp_exec_move() != STAT_NOOP) {
 			st_pre.exec_state = PREP_BUFFER_OWNED_BY_LOADER; // flip it back
-			_request_load_move();
+			st_request_load_move();
 		}
 	}
 }
@@ -439,7 +438,7 @@ namespace Motate {	// Define timer inside Motate namespace
  */
 
 #ifdef __AVR
-static void _request_load_move()
+void st_request_load_move()
 {
 	if (st_run.dda_ticks_downcount == 0) {				// bother interrupting
 		TIMER_LOAD.PER = LOAD_TIMER_PERIOD;
@@ -455,7 +454,7 @@ ISR(TIMER_LOAD_ISR_vect) {								// load steppers SW interrupt
 #endif // __AVR
 
 #ifdef __ARM
-static void _request_load_move()
+void st_request_load_move()
 {
 	if (st_run.dda_ticks_downcount == 0) {				// bother interrupting
 		load_timer.setInterruptPending();
