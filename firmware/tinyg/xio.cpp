@@ -82,6 +82,12 @@
 #include "config.h"					// needed by init() for default source
 #include "controller.h"				// needed by init() for default source
 
+// Static structure allocations
+xioUsart_t 		us[XIO_DEV_USART_COUNT];	// USART extended IO structs
+xioSpi_t 		spi[XIO_DEV_SPI_COUNT];		// SPI extended IO structs
+xioFile_t 		fs[XIO_DEV_FILE_COUNT];		// FILE extended IO structs
+xioDev_t 		ds[XIO_DEV_COUNT];			// allocate top-level dev structs
+
 //
 typedef struct xioSingleton {
 	FILE * stderr_shadow;			// used for stack overflow / memory integrity checking

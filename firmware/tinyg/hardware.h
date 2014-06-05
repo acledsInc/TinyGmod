@@ -231,7 +231,7 @@ typedef struct hmSingleton {
 	uint16_t nvm_profile_base;		// NVM base address of current profile
 
 } hwSingleton_t;
-hwSingleton_t hw;
+extern hwSingleton_t hw;
 
 /*** function prototypes ***/
 

@@ -51,6 +51,9 @@
 /*
  * variables and settings 
  */
+
+struct swStruct sw;
+
 											// timer for debouncing switches
 #define SW_LOCKOUT_TICKS 25					// 25=250ms. RTC ticks are ~10ms each
 #define SW_DEGLITCH_TICKS 3					// 3=30ms

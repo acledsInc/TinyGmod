@@ -37,7 +37,7 @@
 #include "text_parser.h"
 #include "xmega/xmega_init.h"
 
-
+hwSingleton_t hw;
 
 static void _port_bindings(float hw_version);
 
