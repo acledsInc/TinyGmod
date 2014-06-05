@@ -45,10 +45,6 @@
 extern "C"{
 #endif // __cplusplus
 
-const char hack[3] PROGMEM = { 0 };
-
-int main(void);
-
 void _init() __attribute__ ((weak));
 void _init() {;}
 

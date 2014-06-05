@@ -36,9 +36,7 @@
 #include "util.h"
 #include "xio.h"
 
-#ifdef __cplusplus
-extern "C"{
-#endif
+
 
 /**** Allocation ****/
 
@@ -653,6 +651,4 @@ void sr_unit_tests(void)
 #endif	// __UNIT_TESTS
 #endif	// __UNIT_TESTS_REPORT
 
-#ifdef __cplusplus
-}
-#endif
+

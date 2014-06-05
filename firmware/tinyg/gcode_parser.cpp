@@ -25,10 +25,6 @@
 #include "util.h"
 #include "xio.h"			// for char definitions
 
-#ifdef __cplusplus
-extern "C"{
-#endif // __cplusplus
-
 struct gcodeParserSingleton {	 	  // struct to manage globals
 	uint8_t modals[MODAL_GROUP_COUNT];// collects modal groups in a block
 }; struct gcodeParserSingleton gp;
@@ -519,6 +515,4 @@ stat_t gc_run_gc(nvObj_t *nv)
 
 #endif // __TEXT_MODE
 
-#ifdef __cplusplus
-}
-#endif
+

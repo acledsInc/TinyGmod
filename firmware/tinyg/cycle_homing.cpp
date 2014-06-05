@@ -36,9 +36,7 @@
 #include "switch.h"
 #include "report.h"
 
-#ifdef __cplusplus
-extern "C"{
-#endif
+
 
 /**** Homing singleton structure ****/
 
@@ -570,6 +568,4 @@ int8_t _get_next_axes(int8_t axis)
 }
 */
 
-#ifdef __cplusplus
-}
-#endif
+

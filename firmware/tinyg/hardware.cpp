@@ -37,9 +37,7 @@
 #include "text_parser.h"
 #include "xmega/xmega_init.h"
 
-#ifdef __cplusplus
-extern "C"{
-#endif
+
 
 static void _port_bindings(float hw_version);
 
@@ -237,6 +235,4 @@ void hw_print_id(nvObj_t *nv) { text_print_str(nv, fmt_id);}
 
 #endif //__TEXT_MODE 
 
-#ifdef __cplusplus
-}
-#endif
+

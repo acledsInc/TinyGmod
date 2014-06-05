@@ -29,9 +29,7 @@
 #include "config.h"
 #include "encoder.h"
 
-#ifdef __cplusplus
-extern "C"{
-#endif
+
 
 /**** Allocate Structures ****/
 
@@ -111,6 +109,4 @@ float en_read_encoder(uint8_t motor)
 
 #endif // __TEXT_MODE
 
-#ifdef __cplusplus
-}
-#endif
+

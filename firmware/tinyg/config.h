@@ -32,9 +32,7 @@
 #include "config_app.h"	// is present at the end of this file 
 */
 
-#ifdef __cplusplus
-extern "C"{
-#endif
+
 
 /**** Config System Overview and Usage ***
  *
@@ -384,8 +382,6 @@ void cfg_unit_tests(void);
 #define	CONFIG_UNITS
 #endif // __UNIT_TEST_CONFIG
 
-#ifdef __cplusplus
-}
-#endif
+
 
 #endif // End of include guard: CONFIG_H_ONCE

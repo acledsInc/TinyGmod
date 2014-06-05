@@ -29,9 +29,7 @@
 #include "planner.h"
 #include "util.h"
 
-#ifdef __cplusplus
-extern "C"{
-#endif
+
 
 // Allocate arc planner singleton structure
 
@@ -504,6 +502,4 @@ void mp_plan_arc_unit_tests()
 #endif
 #endif
 
-#ifdef __cplusplus
-}
-#endif
+

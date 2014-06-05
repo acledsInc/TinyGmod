@@ -32,9 +32,7 @@
 #include "report.h"
 #include "util.h"
 
-#ifdef __cplusplus
-extern "C"{
-#endif
+
 
 //static float _get_intersection_distance(const float Vi_squared, const float Vt_squared, const float L, const mpBuf_t *bf)
 /*static float _get_intersection_distance(const float Vi, const float Vf, const float L, const mpBuf_t *bf)
@@ -549,6 +547,4 @@ float mp_get_target_velocity(const float Vi, const float L, const mpBuf_t *bf)
     return estimate;
 }
 
-#ifdef __cplusplus
-}
-#endif
+

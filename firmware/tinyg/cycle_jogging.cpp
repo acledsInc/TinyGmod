@@ -34,9 +34,7 @@
 #include "planner.h"
 #include "switch.h"
 
-#ifdef __cplusplus
-extern "C"{
-#endif
+
 
 /**** Jogging singleton structure ****/
 
@@ -218,6 +216,4 @@ static stat_t _jogging_error_exit(int8_t axis)
 }
 */
 
-#ifdef __cplusplus
-}
-#endif
+

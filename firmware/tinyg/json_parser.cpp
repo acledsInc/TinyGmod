@@ -35,9 +35,7 @@
 #include "util.h"
 #include "xio.h"					// for char definitions
 
-#ifdef __cplusplus
-extern "C"{
-#endif
+
 
 /**** Allocation ****/
 
@@ -924,7 +922,3 @@ static void _test_parser()
 }
 
 #endif // __UNIT_TEST_JSON
-
-#ifdef __cplusplus
-}
-#endif // __cplusplus

@@ -28,9 +28,7 @@
 #ifndef TEXT_PARSER_H_ONCE
 #define TEXT_PARSER_H_ONCE
 
-#ifdef __cplusplus
-extern "C"{
-#endif
+
 
 enum textVerbosity {
 	TV_SILENT = 0,					// no response is provided
@@ -116,8 +114,6 @@ void text_unit_tests(void);
 #define	TEXT_UNITS
 #endif // __UNIT_TEST_TEXT
 
-#ifdef __cplusplus
-}
-#endif
+
 
 #endif // End of include guard: TEXT_PARSER_H_ONCE

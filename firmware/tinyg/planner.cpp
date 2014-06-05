@@ -62,9 +62,7 @@
 #include "report.h"
 #include "util.h"
 
-#ifdef __cplusplus
-extern "C"{
-#endif
+
 
 // Allocate planner structures
 
@@ -528,6 +526,4 @@ void mp_dump_runtime_state(void)
 }
 #endif // __DEBUG
 
-#ifdef __cplusplus
-}
-#endif
+

@@ -36,9 +36,7 @@
 #include "report.h"
 #include "util.h"
 
-#ifdef __cplusplus
-extern "C"{
-#endif
+
 
 // aline planner routines / feedhold planning
 static void _plan_block_list(mpBuf_t *bf, uint8_t *mr_flag);
@@ -878,6 +876,4 @@ static void _test_get_junction_vmax()
 #endif // __UNIT_TEST_PLANNER
 #endif
 
-#ifdef __cplusplus
-}
-#endif
+
