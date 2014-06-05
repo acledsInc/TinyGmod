@@ -288,7 +288,7 @@ int xio_putc_spi(const char c, FILE *stream)
 //	return ((int)_write_tx_buffer(((xioDev_t *)stream->udata)->x,c));
 
 	// bit banger version - unbuffered IO
-	xioSpi_t *dx = ((xioDev_t *)stream->udata)->x;
+	xioSpi_t *dx = (xioSpi_t *)((xioDev_t *)stream->udata)->x;
 	char c_in;
 
 	if ((c_in = _xfer_spi_char(dx,c)) != ETX) {

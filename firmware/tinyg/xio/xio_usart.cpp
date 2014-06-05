@@ -220,7 +220,7 @@ void xio_xon_usart(xioUsart_t *dx)
 
 void xio_fc_usart(xioDev_t *d)		// callback from the usart handlers
 {
-	xioUsart_t *dx = d->x;
+	xioUsart_t *dx = (xioUsart_t *)d->x;
 	if (xio_get_rx_bufcount_usart(dx) < XOFF_RX_LO_WATER_MARK) {
 		xio_xon_usart(dx);
 	}
@@ -262,7 +262,7 @@ buffer_t xio_get_rx_bufcount_usart(const xioUsart_t *dx)
  */
 int xio_gets_usart(xioDev_t *d, char *buf, const int size)
 {
-	xioUsart_t *dx = d->x;						// USART pointer
+	xioUsart_t *dx = (xioUsart_t *)d->x;						// USART pointer
 
 	if (d->flag_in_line == false) {				// first time thru initializations
 		d->flag_in_line = true;					// yes, we are busy getting a line
@@ -342,7 +342,7 @@ int xio_getc_usart(FILE *stream)
 {
 	// these convenience pointers optimize faster than resolving the references each time
 	xioDev_t *d = (xioDev_t *)stream->udata;		
-	xioUsart_t *dx = d->x;
+	xioUsart_t *dx = (xioUsart_t *)d->x;
 	char c;
 
 	while (dx->rx_buf_head == dx->rx_buf_tail) {	// RX ISR buffer empty
@@ -402,7 +402,7 @@ void xio_queue_RX_string_usart(const uint8_t dev, const char *buf)
 void xio_queue_RX_char_usart(const uint8_t dev, const char c)
 {
 	xioDev_t *d = &ds[dev];
-	xioUsart_t *dx = d->x;
+	xioUsart_t *dx = (xioUsart_t *)d->x;
 
 	// normal path
 	advance_buffer(dx->rx_buf_head, RX_BUFFER_SIZE);
