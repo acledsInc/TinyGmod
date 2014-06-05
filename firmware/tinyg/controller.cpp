@@ -325,7 +325,7 @@ void tg_set_secondary_source(uint8_t dev) { cs.secondary_src = dev;}
  */
 static stat_t _sync_to_tx_buffer()
 {
-	if ((xio_get_tx_bufcount_usart(ds[XIO_DEV_USB].x) >= XOFF_TX_LO_WATER_MARK)) {
+	if ((xio_get_tx_bufcount_usart((const xioUsart_t*)ds[XIO_DEV_USB].x) >= XOFF_TX_LO_WATER_MARK)) {
 		return (STAT_EAGAIN);
 	}
 	return (STAT_OK);

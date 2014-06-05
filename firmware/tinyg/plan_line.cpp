@@ -99,7 +99,7 @@ stat_t mp_aline(const GCodeState_t *gm_in)
 	float exact_stop = 0;				// preset this value OFF
 	float junction_velocity;
 	uint8_t mr_flag = false;
-	uint8_t path_control_mode = cm_get_path_control(MODEL);
+	//uint8_t path_control_mode = cm_get_path_control(MODEL);
 
 
 	// trap error conditions

@@ -2,13 +2,13 @@
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectVersion>6.1</ProjectVersion>
-    <ToolchainName>com.Atmel.AVRGCC8.C</ToolchainName>
+    <ProjectVersion>6.2</ProjectVersion>
+    <ToolchainName>com.Atmel.AVRGCC8.CPP</ToolchainName>
     <ProjectGuid>{f287940c-eaf0-4385-8aed-fa1d6e3b5832}</ProjectGuid>
     <avrdevice>ATxmega192A3</avrdevice>
     <avrdeviceseries>none</avrdeviceseries>
     <OutputType>Executable</OutputType>
-    <Language>C</Language>
+    <Language>CPP</Language>
     <OutputFileName>$(MSBuildProjectName)</OutputFileName>
     <OutputFileExtension>.elf</OutputFileExtension>
     <OutputDirectory>$(MSBuildProjectDirectory)\$(Configuration)</OutputDirectory>
@@ -35,14 +35,15 @@
     </com_atmel_avrdbg_tool_simulator>
     <AsfFrameworkConfig>
       <framework-data>
-        <options />
-        <configurations />
-        <files />
-        <documentation help="" />
-        <dependencies>
-          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.3.0" />
-        </dependencies>
-      </framework-data>
+  <options />
+  <configurations />
+  <files />
+  <documentation help="" />
+  <offline-documentation help="" />
+  <dependencies>
+    <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.6.0" />
+  </dependencies>
+</framework-data>
     </AsfFrameworkConfig>
     <CacheFlash>true</CacheFlash>
     <ProgFlashFromRam>true</ProgFlashFromRam>
@@ -106,31 +107,33 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <ToolchainSettings>
       <AvrGcc>
-        <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
-        <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
-        <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
-        <avrgcc.common.outputfiles.srec>True</avrgcc.common.outputfiles.srec>
-        <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
-        <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
-        <avrgcc.compiler.symbols.DefSymbols>
-          <ListValues>
-            <Value>F_CPU=32000000UL</Value>
-          </ListValues>
-        </avrgcc.compiler.symbols.DefSymbols>
-        <avrgcc.compiler.optimization.level>Optimize for size (-Os)</avrgcc.compiler.optimization.level>
-        <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
-        <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
-        <avrgcc.compiler.optimization.DebugLevel>Default (-g2)</avrgcc.compiler.optimization.DebugLevel>
-        <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
-        <avrgcc.linker.general.UseVprintfLibrary>True</avrgcc.linker.general.UseVprintfLibrary>
-        <avrgcc.linker.libraries.Libraries>
-          <ListValues>
-            <Value>libm</Value>
-            <Value>libprintf_flt</Value>
-          </ListValues>
-        </avrgcc.linker.libraries.Libraries>
-        <avrgcc.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcc.assembler.debugging.DebugLevel>
-      </AvrGcc>
+  <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
+  <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
+  <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
+  <avrgcc.common.outputfiles.srec>True</avrgcc.common.outputfiles.srec>
+  <avrgcc.common.outputfiles.usersignatures>False</avrgcc.common.outputfiles.usersignatures>
+  <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
+  <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
+  <avrgcc.compiler.symbols.DefSymbols>
+    <ListValues>
+      <Value>F_CPU=32000000UL</Value>
+    </ListValues>
+  </avrgcc.compiler.symbols.DefSymbols>
+  <avrgcc.compiler.optimization.level>Optimize for size (-Os)</avrgcc.compiler.optimization.level>
+  <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
+  <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
+  <avrgcc.compiler.optimization.DebugLevel>Default (-g2)</avrgcc.compiler.optimization.DebugLevel>
+  <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
+  <avrgcc.compiler.miscellaneous.OtherFlags />
+  <avrgcc.linker.general.UseVprintfLibrary>True</avrgcc.linker.general.UseVprintfLibrary>
+  <avrgcc.linker.libraries.Libraries>
+    <ListValues>
+      <Value>libm</Value>
+      <Value>libprintf_flt</Value>
+    </ListValues>
+  </avrgcc.linker.libraries.Libraries>
+  <avrgcc.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcc.assembler.debugging.DebugLevel>
+</AvrGcc>
     </ToolchainSettings>
     <UsesExternalMakeFile>False</UsesExternalMakeFile>
     <BuildTarget>all</BuildTarget>
@@ -138,118 +141,118 @@
     <ExternalMakeFilePath>\\vmware-host\Shared Folders\Alden\Projects\proj38_TinyG\TinyG\firmware\tinyg\Debug\Makefile</ExternalMakeFilePath>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="canonical_machine.c">
+    <Compile Include="canonical_machine.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="canonical_machine.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="config.c">
+    <Compile Include="config.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="config.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="config_app.c">
+    <Compile Include="config_app.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="config_app.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="controller.c">
+    <Compile Include="controller.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="controller.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="cycle_homing.c">
+    <Compile Include="cycle_homing.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="cycle_jogging.c">
+    <Compile Include="cycle_jogging.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="cycle_probing.c">
+    <Compile Include="cycle_probing.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="encoder.c">
+    <Compile Include="encoder.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="encoder.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="gcode_parser.c">
+    <Compile Include="gcode_parser.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="gcode_parser.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="gpio.c">
+    <Compile Include="gpio.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="gpio.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="hardware.c">
+    <Compile Include="hardware.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="hardware.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="help.c">
+    <Compile Include="help.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="help.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="json_parser.c">
+    <Compile Include="json_parser.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="json_parser.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="kinematics.c">
+    <Compile Include="kinematics.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="kinematics.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="main.c">
+    <Compile Include="main.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="network.c">
+    <Compile Include="network.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="network.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="planner.c">
+    <Compile Include="planner.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="planner.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="plan_arc.c">
+    <Compile Include="plan_arc.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="plan_arc.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="plan_exec.c">
+    <Compile Include="plan_exec.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="plan_line.c">
+    <Compile Include="plan_line.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="plan_zoid.c">
+    <Compile Include="plan_zoid.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="pwm.c">
+    <Compile Include="pwm.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="pwm.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="report.c">
+    <Compile Include="report.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="report.h">
@@ -285,25 +288,25 @@
     <Compile Include="settings\settings_zen7x12.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="spindle.c">
+    <Compile Include="spindle.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="spindle.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="stepper.c">
+    <Compile Include="stepper.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="stepper.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="switch.c">
+    <Compile Include="switch.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="switch.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="test.c">
+    <Compile Include="test.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="test.h">
@@ -360,7 +363,7 @@
     <Compile Include="tests\test_099.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="text_parser.c">
+    <Compile Include="text_parser.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="text_parser.h">
@@ -369,64 +372,64 @@
     <Compile Include="tinyg.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="util.c">
+    <Compile Include="util.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="util.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="xio.c">
+    <Compile Include="xio.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="xio.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="xio\xio_file.c">
+    <Compile Include="xio\xio_file.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="xio\xio_file.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="xio\xio_pgm.c">
+    <Compile Include="xio\xio_pgm.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="xio\xio_rs485.c">
+    <Compile Include="xio\xio_rs485.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="xio\xio_spi.c">
+    <Compile Include="xio\xio_spi.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="xio\xio_spi.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="xio\xio_usart.c">
+    <Compile Include="xio\xio_usart.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="xio\xio_usart.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="xio\xio_usb.c">
+    <Compile Include="xio\xio_usb.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="xmega\xmega_eeprom.c">
+    <Compile Include="xmega\xmega_eeprom.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="xmega\xmega_eeprom.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="xmega\xmega_init.c">
+    <Compile Include="xmega\xmega_init.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="xmega\xmega_init.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="xmega\xmega_interrupts.c">
+    <Compile Include="xmega\xmega_interrupts.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="xmega\xmega_interrupts.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="xmega\xmega_rtc.c">
+    <Compile Include="xmega\xmega_rtc.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="xmega\xmega_rtc.h">

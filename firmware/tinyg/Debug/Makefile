@@ -40,46 +40,46 @@ SUBDIRS :=  \
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
-../canonical_machine.c \
-../config.c \
-../config_app.c \
-../controller.c \
-../cycle_homing.c \
-../cycle_jogging.c \
-../cycle_probing.c \
-../encoder.c \
-../gcode_parser.c \
-../gpio.c \
-../hardware.c \
-../help.c \
-../json_parser.c \
-../kinematics.c \
-../main.c \
-../network.c \
-../planner.c \
-../plan_arc.c \
-../plan_exec.c \
-../plan_line.c \
-../plan_zoid.c \
-../pwm.c \
-../report.c \
-../spindle.c \
-../stepper.c \
-../switch.c \
-../test.c \
-../text_parser.c \
-../util.c \
-../xio.c \
-../xio/xio_file.c \
-../xio/xio_pgm.c \
-../xio/xio_rs485.c \
-../xio/xio_spi.c \
-../xio/xio_usart.c \
-../xio/xio_usb.c \
-../xmega/xmega_eeprom.c \
-../xmega/xmega_init.c \
-../xmega/xmega_interrupts.c \
-../xmega/xmega_rtc.c
+../canonical_machine.cpp \
+../config.cpp \
+../config_app.cpp \
+../controller.cpp \
+../cycle_homing.cpp \
+../cycle_jogging.cpp \
+../cycle_probing.cpp \
+../encoder.cpp \
+../gcode_parser.cpp \
+../gpio.cpp \
+../hardware.cpp \
+../help.cpp \
+../json_parser.cpp \
+../kinematics.cpp \
+../main.cpp \
+../network.cpp \
+../planner.cpp \
+../plan_arc.cpp \
+../plan_exec.cpp \
+../plan_line.cpp \
+../plan_zoid.cpp \
+../pwm.cpp \
+../report.cpp \
+../spindle.cpp \
+../stepper.cpp \
+../switch.cpp \
+../test.cpp \
+../text_parser.cpp \
+../util.cpp \
+../xio.cpp \
+../xio/xio_file.cpp \
+../xio/xio_pgm.cpp \
+../xio/xio_rs485.cpp \
+../xio/xio_spi.cpp \
+../xio/xio_usart.cpp \
+../xio/xio_usb.cpp \
+../xmega/xmega_eeprom.cpp \
+../xmega/xmega_init.cpp \
+../xmega/xmega_interrupts.cpp \
+../xmega/xmega_rtc.cpp
 
 
 PREPROCESSING_SRCS += 
@@ -348,24 +348,24 @@ LIB_DEP+=
 
 
 
-./%.o: .././%.c
+./%.o: .././%.cpp
 	@echo Building file: $<
-	@echo Invoking: AVR/GNU C Compiler : 3.4.2
-	$(QUOTE)C:\Program Files\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.2.1002\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DF_CPU=32000000UL  -Os -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atxmega192a3 -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
+	@echo Invoking: AVR8/GNU C Compiler : 4.8.1
+	$(QUOTE)C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.1056\avr8-gnu-toolchain\bin\avr-g++.exe$(QUOTE) -O0 -ffunction-sections -fdata-sections -mmcu=atxmega192a3 -c -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
 	@echo Finished building: $<
 	
 
-xio/%.o: ../xio/%.c
+xio/%.o: ../xio/%.cpp
 	@echo Building file: $<
-	@echo Invoking: AVR/GNU C Compiler : 3.4.2
-	$(QUOTE)C:\Program Files\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.2.1002\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DF_CPU=32000000UL  -Os -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atxmega192a3 -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
+	@echo Invoking: AVR8/GNU C Compiler : 4.8.1
+	$(QUOTE)C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.1056\avr8-gnu-toolchain\bin\avr-g++.exe$(QUOTE) -O0 -ffunction-sections -fdata-sections -mmcu=atxmega192a3 -c -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
 	@echo Finished building: $<
 	
 
-xmega/%.o: ../xmega/%.c
+xmega/%.o: ../xmega/%.cpp
 	@echo Building file: $<
-	@echo Invoking: AVR/GNU C Compiler : 3.4.2
-	$(QUOTE)C:\Program Files\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.2.1002\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DF_CPU=32000000UL  -Os -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atxmega192a3 -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
+	@echo Invoking: AVR8/GNU C Compiler : 4.8.1
+	$(QUOTE)C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.1056\avr8-gnu-toolchain\bin\avr-g++.exe$(QUOTE) -O0 -ffunction-sections -fdata-sections -mmcu=atxmega192a3 -c -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<" 
 	@echo Finished building: $<
 	
 
@@ -393,14 +393,14 @@ all: $(OUTPUT_FILE_PATH) $(ADDITIONAL_DEPENDENCIES)
 
 $(OUTPUT_FILE_PATH): $(OBJS) $(USER_OBJS) $(OUTPUT_FILE_DEP) $(LIB_DEP)
 	@echo Building target: $@
-	@echo Invoking: AVR/GNU Linker : 3.4.2
-	$(QUOTE)C:\Program Files\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.2.1002\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE) -o$(OUTPUT_FILE_PATH_AS_ARGS) $(OBJS_AS_ARGS) $(USER_OBJS) $(LIBS) -Wl,-Map="tinyg.map" -Wl,-u,vfprintf -Wl,--start-group -Wl,-lm -Wl,-lprintf_flt  -Wl,--end-group -Wl,--gc-sections -mmcu=atxmega192a3 
+	@echo Invoking: AVR8/GNU Linker : 4.8.1
+	$(QUOTE)C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.1056\avr8-gnu-toolchain\bin\avr-g++.exe$(QUOTE) -o$(OUTPUT_FILE_PATH_AS_ARGS) $(OBJS_AS_ARGS) $(USER_OBJS) $(LIBS) -Wl,-Map="tinyg.map" -Wl,--start-group  -Wl,--end-group -Wl,--gc-sections -mmcu=atxmega192a3  
 	@echo Finished building target: $@
-	"C:\Program Files\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.2.1002\avr8-gnu-toolchain\bin\avr-objcopy.exe" -O ihex -R .eeprom -R .fuse -R .lock -R .signature  "tinyg.elf" "tinyg.hex"
-	"C:\Program Files\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.2.1002\avr8-gnu-toolchain\bin\avr-objcopy.exe" -j .eeprom  --set-section-flags=.eeprom=alloc,load --change-section-lma .eeprom=0  --no-change-warnings -O ihex "tinyg.elf" "tinyg.eep" || exit 0
-	"C:\Program Files\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.2.1002\avr8-gnu-toolchain\bin\avr-objdump.exe" -h -S "tinyg.elf" > "tinyg.lss"
-	"C:\Program Files\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.2.1002\avr8-gnu-toolchain\bin\avr-objcopy.exe" -O srec -R .eeprom -R .fuse -R .lock -R .signature  "tinyg.elf" "tinyg.srec"
-	"C:\Program Files\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.2.1002\avr8-gnu-toolchain\bin\avr-size.exe" "tinyg.elf"
+	"C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.1056\avr8-gnu-toolchain\bin\avr-objcopy.exe" -O ihex -R .eeprom -R .fuse -R .lock -R .signature -R .user_signatures  "tinyg.elf" "tinyg.hex"
+	"C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.1056\avr8-gnu-toolchain\bin\avr-objcopy.exe" -j .eeprom  --set-section-flags=.eeprom=alloc,load --change-section-lma .eeprom=0  --no-change-warnings -O ihex "tinyg.elf" "tinyg.eep" || exit 0
+	"C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.1056\avr8-gnu-toolchain\bin\avr-objdump.exe" -h -S "tinyg.elf" > "tinyg.lss"
+	"C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.1056\avr8-gnu-toolchain\bin\avr-objcopy.exe" -O srec -R .eeprom -R .fuse -R .lock -R .signature -R .user_signatures "tinyg.elf" "tinyg.srec"
+	"C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.1056\avr8-gnu-toolchain\bin\avr-size.exe" "tinyg.elf"
 	
 	
 
@@ -412,5 +412,5 @@ $(OUTPUT_FILE_PATH): $(OBJS) $(USER_OBJS) $(OUTPUT_FILE_DEP) $(LIB_DEP)
 clean:
 	-$(RM) $(OBJS_AS_ARGS) $(EXECUTABLES)  
 	-$(RM) $(C_DEPS_AS_ARGS)   
-	rm -rf "tinyg.elf" "tinyg.a" "tinyg.hex" "tinyg.lss" "tinyg.eep" "tinyg.map" "tinyg.srec"
+	rm -rf "tinyg.elf" "tinyg.a" "tinyg.hex" "tinyg.lss" "tinyg.eep" "tinyg.map" "tinyg.srec" "tinyg.usersignatures"
 	

@@ -2,83 +2,83 @@
 # Automatically-generated file. Do not edit or delete the file
 ################################################################################
 
-canonical_machine.c
+canonical_machine.cpp
 
-config.c
+config.cpp
 
-config_app.c
+config_app.cpp
 
-controller.c
+controller.cpp
 
-cycle_homing.c
+cycle_homing.cpp
 
-cycle_jogging.c
+cycle_jogging.cpp
 
-cycle_probing.c
+cycle_probing.cpp
 
-encoder.c
+encoder.cpp
 
-gcode_parser.c
+gcode_parser.cpp
 
-gpio.c
+gpio.cpp
 
-hardware.c
+hardware.cpp
 
-help.c
+help.cpp
 
-json_parser.c
+json_parser.cpp
 
-kinematics.c
+kinematics.cpp
 
-main.c
+main.cpp
 
-network.c
+network.cpp
 
-planner.c
+planner.cpp
 
-plan_arc.c
+plan_arc.cpp
 
-plan_exec.c
+plan_exec.cpp
 
-plan_line.c
+plan_line.cpp
 
-plan_zoid.c
+plan_zoid.cpp
 
-pwm.c
+pwm.cpp
 
-report.c
+report.cpp
 
-spindle.c
+spindle.cpp
 
-stepper.c
+stepper.cpp
 
-switch.c
+switch.cpp
 
-test.c
+test.cpp
 
-text_parser.c
+text_parser.cpp
 
-util.c
+util.cpp
 
-xio.c
+xio.cpp
 
-xio\xio_file.c
+xio\xio_file.cpp
 
-xio\xio_pgm.c
+xio\xio_pgm.cpp
 
-xio\xio_rs485.c
+xio\xio_rs485.cpp
 
-xio\xio_spi.c
+xio\xio_spi.cpp
 
-xio\xio_usart.c
+xio\xio_usart.cpp
 
-xio\xio_usb.c
+xio\xio_usb.cpp
 
-xmega\xmega_eeprom.c
+xmega\xmega_eeprom.cpp
 
-xmega\xmega_init.c
+xmega\xmega_init.cpp
 
-xmega\xmega_interrupts.c
+xmega\xmega_interrupts.cpp
 
-xmega\xmega_rtc.c
+xmega\xmega_rtc.cpp
 
