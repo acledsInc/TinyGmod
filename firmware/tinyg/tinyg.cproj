@@ -20,7 +20,7 @@
     <OverrideVtorValue>exception_table</OverrideVtorValue>
     <eraseonlaunchrule>0</eraseonlaunchrule>
     <AsfVersion>2.11.1</AsfVersion>
-    <avrtool>com.atmel.avrdbg.tool.ispmk2</avrtool>
+    <avrtool>com.atmel.avrdbg.tool.atmelice</avrtool>
     <avrtoolinterface>PDI</avrtoolinterface>
     <com_atmel_avrdbg_tool_simulator>
       <ToolType>com.atmel.avrdbg.tool.simulator</ToolType>
@@ -75,6 +75,18 @@
         </InterfaceProperties>
       </ToolOptions>
     </com_atmel_avrdbg_tool_ispmk2>
+    <com_atmel_avrdbg_tool_atmelice>
+      <ToolOptions>
+        <InterfaceProperties>
+          <PdiClock>4000000</PdiClock>
+          <JtagDbgClock>7500000</JtagDbgClock>
+        </InterfaceProperties>
+        <InterfaceName>PDI</InterfaceName>
+      </ToolOptions>
+      <ToolType>com.atmel.avrdbg.tool.atmelice</ToolType>
+      <ToolNumber>J41800001719</ToolNumber>
+      <ToolName>Atmel-ICE</ToolName>
+    </com_atmel_avrdbg_tool_atmelice>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
@@ -119,7 +131,8 @@
       <Value>F_CPU=32000000UL</Value>
     </ListValues>
   </avrgcc.compiler.symbols.DefSymbols>
-  <avrgcc.compiler.optimization.level>Optimize for size (-Os)</avrgcc.compiler.optimization.level>
+  <avrgcc.compiler.optimization.level>Optimize more (-O2)</avrgcc.compiler.optimization.level>
+  <avrgcc.compiler.optimization.OtherFlags>-fno-align-functions  -fno-align-jumps  -fno-align-loops -fno-align-labels -fno-reorder-blocks -fno-reorder-blocks-and-partition -fno-prefetch-loop-arrays -fno-tree-vect-loop-version</avrgcc.compiler.optimization.OtherFlags>
   <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
   <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
   <avrgcc.compiler.optimization.DebugLevel>Maximum (-g3)</avrgcc.compiler.optimization.DebugLevel>
@@ -130,8 +143,18 @@
       <Value>F_CPU=32000000UL</Value>
     </ListValues>
   </avrgcccpp.compiler.symbols.DefSymbols>
-  <avrgcccpp.compiler.optimization.level>Optimize for size (-Os)</avrgcccpp.compiler.optimization.level>
+  <avrgcccpp.compiler.optimization.level>Optimize more (-O2)</avrgcccpp.compiler.optimization.level>
+  <avrgcccpp.compiler.optimization.OtherFlags>-fno-align-functions  -fno-align-jumps  -fno-align-loops -fno-align-labels -fno-reorder-blocks -fno-reorder-blocks-and-partition -fno-prefetch-loop-arrays -fno-tree-vect-loop-version</avrgcccpp.compiler.optimization.OtherFlags>
+  <avrgcccpp.compiler.optimization.PackStructureMembers>True</avrgcccpp.compiler.optimization.PackStructureMembers>
   <avrgcccpp.compiler.optimization.DebugLevel>Maximum (-g3)</avrgcccpp.compiler.optimization.DebugLevel>
+  <avrgcccpp.compiler.warnings.AllWarnings>True</avrgcccpp.compiler.warnings.AllWarnings>
+  <avrgcccpp.linker.general.UseVprintfLibrary>True</avrgcccpp.linker.general.UseVprintfLibrary>
+  <avrgcccpp.linker.libraries.Libraries>
+    <ListValues>
+      <Value>printf_flt</Value>
+      <Value>m</Value>
+    </ListValues>
+  </avrgcccpp.linker.libraries.Libraries>
 </AvrGccCpp>
     </ToolchainSettings>
     <UsesExternalMakeFile>False</UsesExternalMakeFile>
@@ -419,9 +442,9 @@
     <Compile Include="xmega\xmega_init.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="xmega\xmega_init.h">
+    <None Include="xmega\xmega_init.h">
       <SubType>compile</SubType>
-    </Compile>
+    </None>
     <Compile Include="xmega\xmega_interrupts.cpp">
       <SubType>compile</SubType>
     </Compile>

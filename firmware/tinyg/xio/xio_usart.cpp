@@ -38,7 +38,7 @@
  ******************************************************************************/
 // See xio_usart.h for baud rate configuration settings
 static const uint8_t bsel[] PROGMEM = { 0, 207, 103, 51, 34, 33, 31, 27, 19, 1, 1 };
-static const uint8_t bscale[] PROGMEM = { 0, 0, 0, 0, 0, (-1<<4), (-2<<4), (-3<<4), (-4<<4), (1<<4), 1 };
+static const int8_t bscale[] PROGMEM = { 0, 0, 0, 0, 0, (-1<<4), (-2<<4), (-3<<4), (-4<<4), (1<<4), 1 };
 
 struct cfgUSART {
 		x_open_t x_open;
