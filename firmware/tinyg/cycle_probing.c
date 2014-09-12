@@ -156,6 +156,7 @@ static uint8_t _probing_init()
 	cm.cycle_state = CYCLE_PROBE;
 
 	// initialize the axes - save the jerk settings & switch to the jerk_homing settings
+	// *** Use set_axis_jerk. Do not manipulate jerk term directly or planning will fail ***
 	for( uint8_t axis=0; axis<AXES; axis++ ) {
 		pb.saved_jerk[axis] = cm_get_axis_jerk(axis);	// save the max jerk value
 		cm_set_axis_jerk(axis, cm.a[axis].jerk_homing);	// use the homing jerk for probe

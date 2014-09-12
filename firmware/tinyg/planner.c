@@ -63,8 +63,8 @@
 // Allocate planner structures
 
 mpBufferPool_t mb;				// move buffer queue
-mpMoveMasterSingleton_t mm;		// context for line planning
-mpMoveRuntimeSingleton_t mr;	// context for line runtime
+mpPlannerSingleton_t mm;		// context for line planning
+mpRuntimeSingleton_t mr;		// context for line runtime
 
 /*
  * Local Scope Data and Functions

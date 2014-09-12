@@ -125,6 +125,12 @@ enum sectionState {
 #define TRAPEZOID_LENGTH_FIT_TOLERANCE		((float)0.0001)	// allowable mm of error in planning phase
 #define TRAPEZOID_VELOCITY_TOLERANCE		(max(2,bf->entry_velocity/100))
 
+/* Some parameters for _block_anneal()
+ */
+#define BLOCK_ANNEAL_VELOCITY_THRESHOLD			1000
+#define BLOCK_ANNEAL_COSINE_THRESHOLD			(0.8)
+#define BLOCK_ANNEAL_LENGTH_THRESHOLD			0.1
+
 /*
  *	Macros and typedefs
  */
@@ -193,18 +199,28 @@ typedef struct mpBufferPool {		// ring buffer for sub-moves
 	magic_t magic_end;
 } mpBufferPool_t;
 
-typedef struct mpMoveMasterSingleton { // common variables for planning (move master)
+typedef struct mpPlannerSingleton { // common variables for planning (move master)
 	magic_t magic_start;			// magic number to test memory integrity
-	float position[AXES];			// final move position for planning purposes
 
+	// planner state
+	float position[AXES];			// position at start of planning
 	float jerk;						// jerk values cached from previous block
 	float recip_jerk;
 	float cbrt_jerk;
 
-	magic_t magic_end;
-} mpMoveMasterSingleton_t;
+	// block annealing
+	uint8_t annealing;				// false=hunting, true=annealing
+	float ba_unit[AXES];			// reference unit vector
+	float ba_position[AXES];		// store position to enable accurate length
+	float cos_unit;
+	float sin_len;	
+	float length_square;
+	float axis_length[AXES];
 
-typedef struct mpMoveRuntimeSingleton {	// persistent runtime variables
+	magic_t magic_end;
+} mpPlannerSingleton_t;
+
+typedef struct mpRuntimeSingleton {	// persistent runtime variables
 //	uint8_t (*run_move)(struct mpMoveRuntimeSingleton *m); // currently running move - left in for reference
 	magic_t magic_start;			// magic number to test memory integrity
 	uint8_t move_state;				// state of the overall move
@@ -246,12 +262,12 @@ typedef struct mpMoveRuntimeSingleton {	// persistent runtime variables
 	GCodeState_t gm;				// gcode model state currently executing
 
 	magic_t magic_end;
-} mpMoveRuntimeSingleton_t;
+} mpRuntimeSingleton_t;
 
 // Reference global scope structures
 extern mpBufferPool_t mb;				// move buffer queue
-extern mpMoveMasterSingleton_t mm;		// context for line planning
-extern mpMoveRuntimeSingleton_t mr;		// context for line runtime
+extern mpPlannerSingleton_t mm;			// context for line planning
+extern mpRuntimeSingleton_t mr;			// context for line runtime
 
 /*
  * Global Scope Functions

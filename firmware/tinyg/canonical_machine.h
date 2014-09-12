@@ -210,6 +210,7 @@ typedef struct cmSingleton {			// struct to manage cm globals and cycles
 	// system group settings
 	float junction_acceleration;		// centripetal acceleration max for cornering
 	float chordal_tolerance;			// arc chordal accuracy setting in mm
+	float block_tolerance;				// max allowable deviation for block annealing (in mm)
 	uint8_t soft_limit_enable;
 
 	// hidden system settings

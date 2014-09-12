@@ -84,10 +84,130 @@ uint8_t mp_get_runtime_busy()
  *	that are too short to move will accumulate and get executed once the accumulated error
  *	exceeds the minimums.
  */
+/* NOTES on unit vector and jerk computation
+ * To determine the jerk value to use for the block we want to find the axis for which
+ * the jerk cannot be exceeded - the 'jerk-limit' axis. This is the axis for which
+ * the time to decelerate from the target velocity to zero would be the longest.
+ *
+ *	We can determine the "longest" deceleration in terms of time or distance.
+ *
+ *  The math for time-to-decelerate T from speed S to speed E with constant
+ *  jerk J is:
+ *
+ *		T = 2*sqrt((S-E)/J[n])
+ *
+ *	Since E is always zero in this calculation, we can simplify:
+ *		T = 2*sqrt(S/J[n])
+ *
+ *	The math for distance-to-decelerate l from speed S to speed E with constant
+ *  jerk J is:
+ *
+ *		l = (S+E)*sqrt((S-E)/J)
+ *
+ *	Since E is always zero in this calculation, we can simplify:
+ *		l = S*sqrt(S/J)
+ *
+ *  The final value we want is to know which one is *longest*, compared to the others,
+ *	so we don't need the actual value. This means that the scale of the value doesn't
+ *	matter, so for T we can remove the "2 *" and For L we can remove the "S*".
+ *	This leaves both to be simply "sqrt(S/J)". Since we don't need the scale,
+ *	it doesn't matter what speed we're coming from, so S can be replaced with 1.
+ *
+ *  However, we *do* need to compensate for the fact that each axis contributes
+ *	differently to the move, so we will scale each contribution C[n] by the
+ *	proportion of the axis movement length D[n] to the total length of the move L.
+ *	Using that, we construct the following, with these definitions:
+ *
+ *		J[n] = max_jerk for axis n
+ *		D[n] = distance traveled for this move for axis n
+ *		L = total length of the move in all axes
+ *		C[n] = "axis contribution" of axis n
+ *
+ * For each axis n: C[n] = sqrt(1/J[n]) * (D[n]/L)
+ *
+ *	Keeping in mind that we only need a rank compared to the other axes, we can further
+ *	optimize the calculations::
+ *
+ *	Square the expression to remove the square root:
+ *		C[n]^2 = (1/J[n]) * (D[n]/L)^2	(We don't care the C is squared, we'll use it that way.)
+ *
+ *	Re-arranged to optimize divides for pre-calculated values, we create a value
+ *  M that we compute once:
+ *		M = (1/(L^2))
+ *  Then we use it in the calculations for every axis:
+ *		C[n] = (1/J[n]) * D[n]^2 * M
+ *
+ *  Also note that we already have (1/J[n]) calculated for each axis, which simplifies it further.
+ *
+ * Finally, the selected jerk term needs to be scaled by the reciprocal of the absolute value
+ * of the jerk-limit axis's unit vector term. This way when the move is finally decomposed into
+ * its constituent axes for execution the jerk for that axis will be at it's maximum value.
+ */
+
+/*
+ * _block_anneal() - test if new block can simply be stuck on the end of the last one.
+ *
+ * Returns STAT_OK if the block was annealed, otherwise STAT_EAGAIN
+ */
+stat_t _block_anneal(mpBuf_t *bf)
+{
+	mpBuf_t *pv = bf->pv;	// a convenience
+	
+	if (pv->replannable == false) {
+		mm.annealing = false;
+		return (STAT_EAGAIN);
+	}
+	if (mm.annealing == false) {
+		copy_vector(mm.ba_unit, pv->unit);			// save the current last unit vector
+	}
+	if (fabs(bf->cruise_vmax - pv->cruise_vmax) > BLOCK_ANNEAL_VELOCITY_THRESHOLD) {
+		mm.annealing = false;
+		return (STAT_EAGAIN);		
+	}
+//	float cos_unit = 0;
+	mm.cos_unit = 0;
+	for (uint8_t axis=0; axis<AXES; axis++) {
+		mm.cos_unit += mm.ba_unit[axis] * bf->unit[axis];	// dot product generates the cosine
+	}
+	if (mm.cos_unit < BLOCK_ANNEAL_COSINE_THRESHOLD) {
+		mm.annealing = false;
+		return (STAT_EAGAIN);		
+	}
+//	float sin_len = bf->length * sqrt(1 - square(cos_unit));
+	mm.sin_len = bf->length * sqrt(1 - square(mm.cos_unit));
+	if (mm.sin_len > BLOCK_ANNEAL_LENGTH_THRESHOLD) {
+		mm.annealing = false;
+		return (STAT_EAGAIN);
+	}
+	// it's OK to combine the blocks
+
+	// combine the moves
+	uint8_t axis;
+	uint8_t mr_flag = false;
+//	float axis_length[AXES];
+//	float length_square = 0;
+	mm.length_square = 0;
+	
+	for (axis=0; axis<AXES; axis++) {
+		pv->gm.target[axis] = bf->gm.target[axis];
+		mm.axis_length[axis] = bf->gm.target[axis] - mm.position[axis];
+		mm.length_square += square(mm.axis_length[axis]);
+	}
+	pv->length += sqrt(mm.length_square);
+	for (axis=0; axis<AXES; axis++) {					// get the unit vector
+		pv->unit[axis] = mm.axis_length[axis] / pv->length;
+	}
+	_plan_block_list(pv, &mr_flag);						// replan block list
+	copy_vector(mm.position, pv->gm.target);			// set the planner position
+	mp_unget_write_buffer();
+	mm.annealing = true;								// we are now annealing
+	return (STAT_OK);
+}
 
 stat_t mp_aline(GCodeState_t *gm_in)
 {
 	mpBuf_t *bf; 						// current move pointer
+	uint8_t axis;
 	float exact_stop = 0;				// preset this value OFF
 	float junction_velocity;
 	uint8_t mr_flag = false;
@@ -97,7 +217,7 @@ stat_t mp_aline(GCodeState_t *gm_in)
 	float axis_square[AXES];
 	float length_square = 0;
 
-	for (uint8_t axis=0; axis<AXES; axis++) {
+	for (axis=0; axis<AXES; axis++) {
 		axis_length[axis] = gm_in->target[axis] - mm.position[axis];
 		axis_square[axis] = square(axis_length[axis]);
 		length_square += axis_square[axis];
@@ -114,13 +234,14 @@ stat_t mp_aline(GCodeState_t *gm_in)
 
 	// If _calc_move_times() says the move will take less than the minimum move time get a more
 	// accurate time estimate based on starting velocity and acceleration. The time of the move
-	// is determined by its initial velocity (Vi) and how much acceleration will be occur. For
-	// this we need to look at the exit velocity of the previous block. There are 3 possible cases:
+	// is determined by its initial velocity (Vi) and how much acceleration will occur. For this
+	// we need to look at the exit velocity of the previous block. There are 3 possible cases:
 	//	(1) There is no previous block. Vi = 0
 	//	(2) Previous block is optimally planned. Vi = previous block's exit_velocity
 	//	(3) Previous block is not optimally planned. Vi <= previous block's entry_velocity + delta_velocity
 
 	_calc_move_times(gm_in, axis_length, axis_square);						// set move time and minimum time in the state
+
 	if (gm_in->move_time < MIN_BLOCK_TIME) {
 		float delta_velocity = pow(length, 0.66666666) * mm.cbrt_jerk;		// max velocity change for this move - uses jerk from previous move
 		float entry_velocity = 0;											// pre-set as if no previous block
@@ -131,7 +252,7 @@ stat_t mp_aline(GCodeState_t *gm_in)
 				entry_velocity = bf->exit_velocity;
 			}
 		}
-		float move_time = (2 * length) / (2*entry_velocity + delta_velocity);// compute execution time for this move
+		float move_time = (2*length) / (2*entry_velocity + delta_velocity);	// compute execution time for this move
 		if (move_time < MIN_BLOCK_TIME) {
 			sr_request_status_report(SR_REQUEST_IMMEDIATE_FULL);
 			return (STAT_MINIMUM_TIME_MOVE);
@@ -147,82 +268,24 @@ stat_t mp_aline(GCodeState_t *gm_in)
 	memcpy(&bf->gm, gm_in, sizeof(GCodeState_t));						// copy model state into planner buffer
 
 	// Compute the unit vector and find the right jerk to use (combined operations)
-	// To determine the jerk value to use for the block we want to find the axis for which
-	// the jerk cannot be exceeded - the 'jerk-limit' axis. This is the axis for which
-	// the time to decelerate from the target velocity to zero would be the longest.
-	//
-	//	We can determine the "longest" deceleration in terms of time or distance.
-	//
-	//  The math for time-to-decelerate T from speed S to speed E with constant
-	//  jerk J is:
-	//
-	//		T = 2*sqrt((S-E)/J[n])
-	//
-	//	Since E is always zero in this calculation, we can simplify:
-	//		T = 2*sqrt(S/J[n])
-	//
-	//	The math for distance-to-decelerate l from speed S to speed E with constant
-	//  jerk J is:
-	//
-	//		l = (S+E)*sqrt((S-E)/J)
-	//
-	//	Since E is always zero in this calculation, we can simplify:
-	//		l = S*sqrt(S/J)
-	//
-	//  The final value we want is to know which one is *longest*, compared to the others,
-	//	so we don't need the actual value. This means that the scale of the value doesn't
-	//	matter, so for T we can remove the "2 *" and For L we can remove the "S*".
-	//	This leaves both to be simply "sqrt(S/J)". Since we don't need the scale,
-	//	it doesn't matter what speed we're coming from, so S can be replaced with 1.
-	//
-	//  However, we *do* need to compensate for the fact that each axis contributes
-	//	differently to the move, so we will scale each contribution C[n] by the
-	//	proportion of the axis movement length D[n] to the total length of the move L.
-	//	Using that, we construct the following, with these definitions:
-	//
-	//		J[n] = max_jerk for axis n
-	//		D[n] = distance traveled for this move for axis n
-	//		L = total length of the move in all axes
-	//		C[n] = "axis contribution" of axis n
-	//
-	// For each axis n: C[n] = sqrt(1/J[n]) * (D[n]/L)
-	//
-	//	Keeping in mind that we only need a rank compared to the other axes, we can further
-	//	optimize the calculations::
-	//
-	//	Square the expression to remove the square root:
-	//		C[n]^2 = (1/J[n]) * (D[n]/L)^2	(We don't care the C is squared, we'll use it that way.)
-	//
-	//	Re-arranged to optimize divides for pre-calculated values, we create a value
-	//  M that we compute once:
-	//		M = (1/(L^2))
-	//  Then we use it in the calculations for every axis:
-	//		C[n] = (1/J[n]) * D[n]^2 * M
-	//
-	//  Also note that we already have (1/J[n]) calculated for each axis, which simplifies it further.
-	//
-	// Finally, the selected jerk term needs to be scaled by the reciprocal of the absolute value
-	// of the jerk-limit axis's unit vector term. This way when the move is finally decomposed into
-	// its constituent axes for execution the jerk for that axis will be at it's maximum value.
-
-	float C;					// contribution term. C = T * a
+	// See explanation in header comments for details
+	float C;															// contribution term. C = T * a
 	float maxC = 0;
 	float recip_L2 = 1/length_square;
 
 	for (uint8_t axis=0; axis<AXES; axis++) {
 		if (fp_NOT_ZERO(axis_length[axis])) {
 			bf->unit[axis] = axis_length[axis] / bf->length;			// compute unit vector term (zeros are already zero)
-			C = axis_square[axis] * recip_L2 * cm.a[axis].recip_jerk;	// squaring axis_length ensures it's positive
+			C = axis_square[axis] * recip_L2 * cm.a[axis].recip_jerk;	// using squared axis_length ensures it's positive
 			if (C > maxC) {
 				maxC = C;
 				bf->jerk_axis = axis;									// also needed for junction vmax calculation
 			}
 		}
 	}
-	// set up and pre-compute the jerk terms needed for this round of planning
-//	bf->jerk = cm.a[bf->jerk_axis].recip_jerk * fabs(bf->unit[bf->jerk_axis]);// scale the jerk
 	bf->jerk = cm.a[bf->jerk_axis].jerk_max * JERK_MULTIPLIER / fabs(bf->unit[bf->jerk_axis]);	// scale the jerk
 
+	// set up and pre-compute the jerk terms needed for this round of planning
 	if (fabs(bf->jerk - mm.jerk) > JERK_MATCH_TOLERANCE) {	// specialized comparison for tolerance of delta
 		mm.jerk = bf->jerk;									// used before this point next time around
 		mm.recip_jerk = 1/bf->jerk;							// compute cached jerk terms used by planning
@@ -242,6 +305,11 @@ stat_t mp_aline(GCodeState_t *gm_in)
 	bf->delta_vmax = mp_get_target_velocity(0, bf->length, bf);
 	bf->exit_vmax = min3(bf->cruise_vmax, (bf->entry_vmax + bf->delta_vmax), exact_stop);
 	bf->braking_velocity = bf->delta_vmax;
+
+	// now that you have all the data see of the block can be annealed to the las block
+	if (_block_anneal(bf) == STAT_OK) {
+		return (STAT_OK);
+	}
 
 	// Note: these next lines must remain in exact order. Position must update before committing the buffer.
 	_plan_block_list(bf, &mr_flag);				// replan block list

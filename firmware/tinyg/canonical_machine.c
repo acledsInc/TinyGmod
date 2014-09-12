@@ -1684,8 +1684,8 @@ stat_t cm_set_am(nvObj_t *nv)		// axis mode
  * cm_get_axis_jerk() - returns jerk for an axis
  * cm_set_axis_jerk() - sets the jerk for an axis, including recirpcal and cached values
  *
- * cm_set_xjm()		  - set jerk max value - called from dispatch table
- * cm_set_xjh()		  - set jerk homing value - called from dispatch table
+ * cm_set_xjm() - set jerk max value - called from dispatch table
+ * cm_set_xjh()	- set jerk homing value - called from dispatch table
  *
  *	Jerk values can be rather large, often in the billions. This makes for some pretty big
  *	numbers for people to deal with. Jerk values are stored in the system in truncated format;
@@ -1702,7 +1702,7 @@ float cm_get_axis_jerk(uint8_t axis)
 	return (cm.a[axis].jerk_max);
 }
 
-void cm_set_axis_jerk(uint8_t axis, float jerk)
+void cm_set_axis_jerk(uint8_t axis, const float jerk)
 {
 	cm.a[axis].jerk_max = jerk;
 	cm.a[axis].recip_jerk = 1/(jerk * JERK_MULTIPLIER);
