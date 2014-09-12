@@ -35,6 +35,7 @@
 #include "util.h"
 
 // aline planner routines / feedhold planning
+static stat_t _block_anneal(mpBuf_t *bf);
 static void _calc_move_times(GCodeState_t *gms, const float axis_length[], const float axis_square[]);
 static void _plan_block_list(mpBuf_t *bf, uint8_t *mr_flag);
 static float _get_junction_vmax(const float a_unit[], const float b_unit[]);
@@ -144,66 +145,6 @@ uint8_t mp_get_runtime_busy()
  * its constituent axes for execution the jerk for that axis will be at it's maximum value.
  */
 
-/*
- * _block_anneal() - test if new block can simply be stuck on the end of the last one.
- *
- * Returns STAT_OK if the block was annealed, otherwise STAT_EAGAIN
- */
-stat_t _block_anneal(mpBuf_t *bf)
-{
-	mpBuf_t *pv = bf->pv;	// a convenience
-	
-	if (pv->replannable == false) {
-		mm.annealing = false;
-		return (STAT_EAGAIN);
-	}
-	if (mm.annealing == false) {
-		copy_vector(mm.ba_unit, pv->unit);			// save the current last unit vector
-	}
-	if (fabs(bf->cruise_vmax - pv->cruise_vmax) > BLOCK_ANNEAL_VELOCITY_THRESHOLD) {
-		mm.annealing = false;
-		return (STAT_EAGAIN);		
-	}
-//	float cos_unit = 0;
-	mm.cos_unit = 0;
-	for (uint8_t axis=0; axis<AXES; axis++) {
-		mm.cos_unit += mm.ba_unit[axis] * bf->unit[axis];	// dot product generates the cosine
-	}
-	if (mm.cos_unit < BLOCK_ANNEAL_COSINE_THRESHOLD) {
-		mm.annealing = false;
-		return (STAT_EAGAIN);		
-	}
-//	float sin_len = bf->length * sqrt(1 - square(cos_unit));
-	mm.sin_len = bf->length * sqrt(1 - square(mm.cos_unit));
-	if (mm.sin_len > BLOCK_ANNEAL_LENGTH_THRESHOLD) {
-		mm.annealing = false;
-		return (STAT_EAGAIN);
-	}
-	// it's OK to combine the blocks
-
-	// combine the moves
-	uint8_t axis;
-	uint8_t mr_flag = false;
-//	float axis_length[AXES];
-//	float length_square = 0;
-	mm.length_square = 0;
-	
-	for (axis=0; axis<AXES; axis++) {
-		pv->gm.target[axis] = bf->gm.target[axis];
-		mm.axis_length[axis] = bf->gm.target[axis] - mm.position[axis];
-		mm.length_square += square(mm.axis_length[axis]);
-	}
-	pv->length += sqrt(mm.length_square);
-	for (axis=0; axis<AXES; axis++) {					// get the unit vector
-		pv->unit[axis] = mm.axis_length[axis] / pv->length;
-	}
-	_plan_block_list(pv, &mr_flag);						// replan block list
-	copy_vector(mm.position, pv->gm.target);			// set the planner position
-	mp_unget_write_buffer();
-	mm.annealing = true;								// we are now annealing
-	return (STAT_OK);
-}
-
 stat_t mp_aline(GCodeState_t *gm_in)
 {
 	mpBuf_t *bf; 						// current move pointer
@@ -276,6 +217,7 @@ stat_t mp_aline(GCodeState_t *gm_in)
 	for (uint8_t axis=0; axis<AXES; axis++) {
 		if (fp_NOT_ZERO(axis_length[axis])) {
 			bf->unit[axis] = axis_length[axis] / bf->length;			// compute unit vector term (zeros are already zero)
+			bf->st_position[axis] = mm.position[axis];					// save starting position for block annealing
 			C = axis_square[axis] * recip_L2 * cm.a[axis].recip_jerk;	// using squared axis_length ensures it's positive
 			if (C > maxC) {
 				maxC = C;
@@ -306,7 +248,7 @@ stat_t mp_aline(GCodeState_t *gm_in)
 	bf->exit_vmax = min3(bf->cruise_vmax, (bf->entry_vmax + bf->delta_vmax), exact_stop);
 	bf->braking_velocity = bf->delta_vmax;
 
-	// now that you have all the data see of the block can be annealed to the las block
+	// attempt to combine this block with the last block
 	if (_block_anneal(bf) == STAT_OK) {
 		return (STAT_OK);
 	}
@@ -319,11 +261,70 @@ stat_t mp_aline(GCodeState_t *gm_in)
 }
 
 /***** ALINE HELPERS *****
+ * _block_anneal()
  * _calc_move_times()
  * _plan_block_list()
  * _get_junction_vmax()
  * _reset_replannable_list()
  */
+
+/*
+ * _block_anneal() - test if new block can simply be stuck on the end of the last one.
+ *
+ * Returns STAT_OK if the block was annealed, otherwise STAT_EAGAIN
+ */
+static stat_t _block_anneal(mpBuf_t *bf)
+{
+	mpBuf_t *pv = bf->pv;	// a convenience
+	
+	// test if block is not replannable or the target velocities don't match
+	if ((pv->replannable == false) || 
+		(fabs(bf->cruise_vmax - pv->cruise_vmax) > BLOCK_ANNEAL_VELOCITY_THRESHOLD)) {
+		mm.annealing = false;
+		return (STAT_EAGAIN);
+	}
+	
+	// record the starting unit vector for testing tolerance
+	if (mm.annealing == false) {
+		copy_vector(mm.ba_unit, pv->unit);					// save starting unit vector
+	}
+
+	// test if the angular direction at the join of the 2 lines is too far off
+	mm.cos_unit = 0;
+	for (uint8_t axis=0; axis<AXES; axis++) {
+		mm.cos_unit += mm.ba_unit[axis] * bf->unit[axis];	// use dot product to get the cosine
+	}
+	if (mm.cos_unit < BLOCK_ANNEAL_COSINE_THRESHOLD) {
+		mm.annealing = false;
+		return (STAT_EAGAIN);		
+	}
+	
+	// test if the new target endpoint is outside tolerance
+	mm.sin_len = bf->length * sqrt(1 - square(mm.cos_unit)); // sine from cosine angle identity
+	if (mm.sin_len > BLOCK_ANNEAL_LENGTH_THRESHOLD) {
+		mm.annealing = false;
+		return (STAT_EAGAIN);
+	}
+	
+	// combine the blocks
+	mm.annealing = true;									// we are now annealing
+	uint8_t axis;
+	mm.length_square = 0;
+	for (axis=0; axis<AXES; axis++) {
+		pv->gm.target[axis] = bf->gm.target[axis];
+		mm.axis_length[axis] = bf->gm.target[axis] - pv->st_position[axis];
+		mm.length_square += square(mm.axis_length[axis]);
+	}
+	pv->length = sqrt(mm.length_square);					// update the length
+	for (axis=0; axis<AXES; axis++) {						// update the unit vector
+		pv->unit[axis] = mm.axis_length[axis] / pv->length;
+	}
+	uint8_t mr_flag = false;
+	_plan_block_list(pv, &mr_flag);							// replan block list
+	copy_vector(mm.position, pv->gm.target);				// set the planner position
+	mp_unget_write_buffer();
+	return (STAT_OK);
+}
 
 /*
  * _calc_move_times() - compute optimal and minimum move times into the gcode_state

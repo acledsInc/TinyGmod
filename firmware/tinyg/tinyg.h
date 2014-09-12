@@ -45,7 +45,7 @@
 /****** REVISIONS ******/
 
 #ifndef TINYG_FIRMWARE_BUILD
-#define TINYG_FIRMWARE_BUILD   		451.01	// Block annealing - interim commit
+#define TINYG_FIRMWARE_BUILD   		451.02	// Block annealing - interim commit
 
 #endif
 #define TINYG_FIRMWARE_VERSION		0.97						// firmware major version

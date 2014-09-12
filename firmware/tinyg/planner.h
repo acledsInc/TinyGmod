@@ -111,7 +111,8 @@ enum sectionState {
  *	planning in the case of very short lines or arc segments.
  *	Suggest 12 min. Limit is 255
  */
-#define PLANNER_BUFFER_POOL_SIZE 28
+//#define PLANNER_BUFFER_POOL_SIZE 28
+#define PLANNER_BUFFER_POOL_SIZE 12
 #define PLANNER_BUFFER_HEADROOM 4			// buffers to reserve in planner before processing new input line
 
 /* Some parameters for _generate_trapezoid()
@@ -127,9 +128,9 @@ enum sectionState {
 
 /* Some parameters for _block_anneal()
  */
-#define BLOCK_ANNEAL_VELOCITY_THRESHOLD			1000
-#define BLOCK_ANNEAL_COSINE_THRESHOLD			(0.8)
-#define BLOCK_ANNEAL_LENGTH_THRESHOLD			0.1
+#define BLOCK_ANNEAL_VELOCITY_THRESHOLD			(1000.0)
+#define BLOCK_ANNEAL_COSINE_THRESHOLD			(0.90)
+#define BLOCK_ANNEAL_LENGTH_THRESHOLD			(0.05)
 
 /*
  *	Macros and typedefs
@@ -164,7 +165,8 @@ typedef struct mpBuffer {			// See Planning Velocity Notes for variable usage
 	uint8_t replannable;			// TRUE if move can be re-planned
 
 	float unit[AXES];				// unit vector for axis scaling & planning
-
+	float st_position[AXES];		// starting position used by block annealing
+	
 	float length;					// total length of line or helix in mm
 	float head_length;
 	float body_length;

@@ -174,7 +174,7 @@ static stat_t _jogging_axis_jog(int8_t axis)			// run the jog move
 #else
     // use a really slow jerk so we ramp up speed
     // FIXME: need asymmetric accel/decel jerk for this to work...
-	cm_set_axis_jerk(axis, 25);
+	cm_set_axis_jerk(axis, 25);	 // use cm_set_axis_jerk, don't access the jerk directly
     //cm.a[axis].jerk_accel = 10;
     //cm.a[axis].jerk_decel = 900;
 #endif
