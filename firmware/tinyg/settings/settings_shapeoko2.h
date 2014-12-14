@@ -109,41 +109,41 @@
 // *** axis settings ***
 
 #define X_AXIS_MODE				AXIS_STANDARD		// xam		see canonical_machine.h cmAxisMode for valid values
-#define X_VELOCITY_MAX			50000 				// xvm		G0 max velocity in mm/min
+#define X_VELOCITY_MAX			45000 				// xvm		G0 max velocity in mm/min
 #define X_FEEDRATE_MAX			X_VELOCITY_MAX		// xfr 		G1 max feed rate in mm/min
 #define X_TRAVEL_MIN			0					// xtn		minimum travel for soft limits
 #define X_TRAVEL_MAX			280					// xtm		travel between switches or crashes
-#define X_JERK_MAX				8000				// xjm		yes, that's "5 billion" mm/(min^3)
+#define X_JERK_MAX				10000				// xjm		yes, that's "10 billion" mm/(min^3)
 #define X_JERK_HOMING			10000				// xjh
 #define X_JUNCTION_DEVIATION	JUNCTION_DEVIATION	// xjd
 #define X_SWITCH_MODE_MIN		SW_MODE_HOMING_LIMIT// xsn		SW_MODE_DISABLED, SW_MODE_HOMING, SW_MODE_LIMIT, SW_MODE_HOMING_LIMIT
 #define X_SWITCH_MODE_MAX 		SW_MODE_LIMIT		// xsx		SW_MODE_DISABLED, SW_MODE_HOMING, SW_MODE_LIMIT, SW_MODE_HOMING_LIMIT
 #define X_SEARCH_VELOCITY		3000				// xsv		minus means move to minimum switch
 #define X_LATCH_VELOCITY		100					// xlv		mm/min
-#define X_LATCH_BACKOFF			20					// xlb		mm
+#define X_LATCH_BACKOFF			10					// xlb		mm
 #define X_ZERO_BACKOFF			3					// xzb		mm
 
 #define Y_AXIS_MODE				AXIS_STANDARD
-#define Y_VELOCITY_MAX			50000
+#define Y_VELOCITY_MAX			45000
 #define Y_FEEDRATE_MAX			Y_VELOCITY_MAX
 #define Y_TRAVEL_MIN			0
-#define Y_TRAVEL_MAX			280
-#define Y_JERK_MAX				5000
+#define Y_TRAVEL_MAX			320
+#define Y_JERK_MAX				10000
 #define Y_JERK_HOMING			10000
 #define Y_JUNCTION_DEVIATION	JUNCTION_DEVIATION
 #define Y_SWITCH_MODE_MIN		SW_MODE_HOMING_LIMIT
 #define Y_SWITCH_MODE_MAX		SW_MODE_LIMIT
 #define Y_SEARCH_VELOCITY		3000
 #define Y_LATCH_VELOCITY		100
-#define Y_LATCH_BACKOFF			20
+#define Y_LATCH_BACKOFF			10
 #define Y_ZERO_BACKOFF			3
 
 #define Z_AXIS_MODE				AXIS_STANDARD
-#define Z_VELOCITY_MAX			1600
+#define Z_VELOCITY_MAX			2000
 #define Z_FEEDRATE_MAX			Z_VELOCITY_MAX
 #define Z_TRAVEL_MAX			0
 #define Z_TRAVEL_MIN			-95
-#define Z_JERK_MAX				500
+#define Z_JERK_MAX				250
 #define Z_JERK_HOMING			1000
 #define Z_JUNCTION_DEVIATION	0.05
 #define Z_SWITCH_MODE_MIN		SW_MODE_DISABLED

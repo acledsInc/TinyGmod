@@ -262,9 +262,10 @@ static stat_t _homing_axis_start(int8_t axis)
 	if (fp_ZERO(cm.a[axis].latch_velocity)) return (_homing_error_exit(axis, STAT_HOMING_ERROR_ZERO_LATCH_VELOCITY));
 	if (cm.a[axis].latch_backoff < 0) return (_homing_error_exit(axis, STAT_HOMING_ERROR_NEGATIVE_LATCH_BACKOFF));
 
-	// calculate and test travel distance
-	float travel_distance = fabs(cm.a[axis].travel_max - cm.a[axis].travel_min) + cm.a[axis].latch_backoff;
+	// calculate and test travel distance. Then add some fudge to allow for minor configuration variations
+	float travel_distance = fabs(cm.a[axis].travel_max - cm.a[axis].travel_min);
 	if (fp_ZERO(travel_distance)) return (_homing_error_exit(axis, STAT_HOMING_ERROR_TRAVEL_MIN_MAX_IDENTICAL));
+	travel_distance += 3 * cm.a[axis].latch_backoff;
 
 	// determine the switch setup and that config is OK
 #ifndef __NEW_SWITCHES
