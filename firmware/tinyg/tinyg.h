@@ -45,7 +45,7 @@
 /****** REVISIONS ******/
 
 #ifndef TINYG_FIRMWARE_BUILD
-#define TINYG_FIRMWARE_BUILD   		451.01	// Testing homing - added some additional distance to homing total travel
+#define TINYG_FIRMWARE_BUILD   		451.02	// Testing homing - changed homing error messages to report more specific error cases (not just generic homing error)
 
 #endif
 #define TINYG_FIRMWARE_VERSION		0.97						// firmware major version
