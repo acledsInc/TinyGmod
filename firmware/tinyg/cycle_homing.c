@@ -176,7 +176,6 @@ stat_t cm_homing_cycle_start(void)
 	hm.saved_distance_mode = cm_get_distance_mode(ACTIVE_MODEL);
 	hm.saved_feed_rate_mode = cm_get_feed_rate_mode(ACTIVE_MODEL);
 	hm.saved_feed_rate = cm_get_feed_rate(ACTIVE_MODEL);
-	hm.target_position = 0;
 
 	// set working values
 	cm_set_units_mode(MILLIMETERS);
@@ -265,7 +264,7 @@ static stat_t _homing_axis_start(int8_t axis)
 	// calculate and test travel distance. Then add some fudge to allow for minor configuration variations
 	float travel_distance = fabs(cm.a[axis].travel_max - cm.a[axis].travel_min);
 	if (fp_ZERO(travel_distance)) return (_homing_error_exit(axis, STAT_HOMING_ERROR_TRAVEL_MIN_MAX_IDENTICAL));
-	travel_distance += 3 * cm.a[axis].latch_backoff;
+	travel_distance += (3 * cm.a[axis].latch_backoff);
 
 	// determine the switch setup and that config is OK
 #ifndef __NEW_SWITCHES
@@ -350,16 +349,12 @@ static stat_t _homing_axis_clear(int8_t axis)				// first clear move
 		_homing_axis_move(axis, hm.latch_backoff, hm.search_velocity);
 	} else if (sw1.state[hm.limit_switch] == SW_CLOSED) {
 		_homing_axis_move(axis, -hm.latch_backoff, hm.search_velocity);
-	} else { // no move needed, so target position is same as current position
-		hm.target_position = cm_get_absolute_position(MODEL, axis);
 	}
 #else
 	if (read_switch2(hm.homing_switch_axis, hm.homing_switch_position) == SW_CLOSED) {
 		_homing_axis_move(axis, hm.latch_backoff, hm.search_velocity);
 	} else if (read_switch2(hm.limit_switch_axis, hm.limit_switch_position) == SW_CLOSED) {
 		_homing_axis_move(axis, -hm.latch_backoff, hm.search_velocity);
-	} else { // no move needed, so target position is same as current position
-		hm.target_position = cm_get_absolute_position(MODEL, axis);
 	}
 #endif
 	return (_set_homing_func(_homing_axis_search));
@@ -368,6 +363,8 @@ static stat_t _homing_axis_clear(int8_t axis)				// first clear move
 static stat_t _homing_axis_search(int8_t axis)				// start the search
 {
 	cm_set_axis_jerk(axis, cm.a[axis].jerk_homing);			// use the homing jerk for search onward
+	hm.target_position = hm.search_travel + cm_get_absolute_position(RUNTIME, axis);	// search target position
+	printf ("S: %f %f %f\n", hm.target_position, hm.search_travel, cm_get_absolute_position(RUNTIME, axis));
 	_homing_axis_move(axis, hm.search_travel, hm.search_velocity);
     return (_set_homing_func(_homing_axis_latch));
 }
@@ -391,6 +388,11 @@ static stat_t _homing_axis_latch(int8_t axis)				// latch to switch open
 		return (_set_homing_func(_homing_abort));
 #endif
 */
+	printf ("cyc:%d, hold:%d, mac:%d\n", cm_get_cycle_state(), cm_get_hold_state(), cm_get_machine_state());
+	printf ("L: %f %f %f\n", hm.target_position, hm.search_travel, cm_get_absolute_position(RUNTIME, axis));
+	if (fp_EQ(cm_get_absolute_position(RUNTIME, axis), hm.target_position)) {	// search failed to hit a switch
+		return (_homing_error_exit(axis, STAT_HOMING_ERROR_SEARCH_FAILED));
+	}
 	_homing_axis_move(axis, hm.latch_backoff, hm.latch_velocity);
 	return (_set_homing_func(_homing_axis_zero_backoff));
 }

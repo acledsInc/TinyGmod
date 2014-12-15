@@ -441,12 +441,12 @@ static const char stat_239[] PROGMEM = "239";
 
 static const char stat_240[] PROGMEM = "Homing cycle failed";
 static const char stat_241[] PROGMEM = "Bad or no homing axis";
-static const char stat_242[] PROGMEM = "Homing search velocity is zero";
-static const char stat_243[] PROGMEM = "Homing latch velocity is zero";
-static const char stat_244[] PROGMEM = "Travel min & max are the same";
-static const char stat_245[] PROGMEM = "Negative latch backoff is illegal";
-static const char stat_246[] PROGMEM = "Homing switch settings misconfigured";
-static const char stat_247[] PROGMEM = "247";
+static const char stat_242[] PROGMEM = "Homing switch settings misconfigured";
+static const char stat_243[] PROGMEM = "Homing search velocity is zero";
+static const char stat_244[] PROGMEM = "Homing latch velocity is zero";
+static const char stat_245[] PROGMEM = "Travel min & max are the same";
+static const char stat_246[] PROGMEM = "Negative latch backoff is illegal";
+static const char stat_247[] PROGMEM = "Search failed to trip homing switch";
 static const char stat_248[] PROGMEM = "248";
 static const char stat_249[] PROGMEM = "249";
 
