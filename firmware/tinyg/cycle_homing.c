@@ -75,7 +75,7 @@ struct hmHomingSingleton {			// persistent homing runtime variables
 	uint8_t saved_feed_rate_mode;	// G93, G94 global setting
 	float saved_feed_rate;			// F setting
 	float saved_jerk;				// saved and restored for each axis homed
-	float target_position;          // saved prior to initiating moves, for verifying post-move position
+//	float target_position;          // saved prior to initiating moves, for verifying post-move position
 };
 static struct hmHomingSingleton hm;
 
@@ -188,6 +188,7 @@ stat_t cm_homing_cycle_start(void)
 	hm.func = _homing_axis_start; 			// bind initial processing function
 	cm.cycle_state = CYCLE_HOMING;
 	cm.homing_state = HOMING_NOT_HOMED;
+	cm.hold_flag = false;					// used to test for the search not firing a switch
 	return (STAT_OK);
 }
 
@@ -201,7 +202,6 @@ stat_t cm_homing_cycle_start_no_set(void)
 /* Homing axis moves - these execute in sequence for each axis
  * cm_homing_cycle_callback() 	- main loop callback for running the homing cycle
  *	_set_homing_func()			- a convenience for setting the next dispatch vector and exiting
- *  _verify_position()          - checks current position against hm.target_position from last move
  *	_trigger_feedhold()			- callback from switch closure to trigger a feedhold (convenience for casting)
  *  _bind_switch_settings()		- setup switch for homing operation
  *	_restore_switch_settings()	- return switch to normal operation
@@ -363,8 +363,8 @@ static stat_t _homing_axis_clear(int8_t axis)				// first clear move
 static stat_t _homing_axis_search(int8_t axis)				// start the search
 {
 	cm_set_axis_jerk(axis, cm.a[axis].jerk_homing);			// use the homing jerk for search onward
-	hm.target_position = hm.search_travel + cm_get_absolute_position(RUNTIME, axis);	// search target position
-	printf ("S: %f %f %f\n", hm.target_position, hm.search_travel, cm_get_absolute_position(RUNTIME, axis));
+//	hm.target_position = hm.search_travel + cm_get_absolute_position(RUNTIME, axis);	// search target position
+//	printf ("S: %f %f %f\n", hm.target_position, hm.search_travel, cm_get_absolute_position(RUNTIME, axis));
 	_homing_axis_move(axis, hm.search_travel, hm.search_velocity);
     return (_set_homing_func(_homing_axis_latch));
 }
@@ -374,25 +374,17 @@ static stat_t _homing_axis_latch(int8_t axis)				// latch to switch open
 /*	// Removed this code section because if a NO homing switch opens before the
 	// search deceleration is complete the switch will (correctly) be open.
 	// Therefore the homing cycle should continue -- ASH (build 445.01)
-	//
+
 	// Still need to figure out how to tell the difference between a rapid switch opening
 	// condition (above) and a user- initiated feedhold during a homing operation.
-
-	// verify assumption that we arrived here because of homing switch closure
-	// rather than user-initiated feedhold or other disruption
-#ifndef __NEW_SWITCHES
-	if (sw.state[hm.homing_switch] != SW_CLOSED)
-		return (_set_homing_func(_homing_abort));
-#else
-	if (read_switch(hm.homing_switch_axis, hm.homing_switch_position) != SW_CLOSED)
-		return (_set_homing_func(_homing_abort));
-#endif
 */
-	printf ("cyc:%d, hold:%d, mac:%d\n", cm_get_cycle_state(), cm_get_hold_state(), cm_get_machine_state());
-	printf ("L: %f %f %f\n", hm.target_position, hm.search_travel, cm_get_absolute_position(RUNTIME, axis));
-	if (fp_EQ(cm_get_absolute_position(RUNTIME, axis), hm.target_position)) {	// search failed to hit a switch
+	// This function is entered after search finishes. Test if the search found a switch or failed.
+	// Verify that we arrived here because of homing switch closure rather than just the search 
+	// failing in an underrun (did not reach switch) or overrun (crashed into the wall)
+	if (cm.hold_flag == false) {
 		return (_homing_error_exit(axis, STAT_HOMING_ERROR_SEARCH_FAILED));
 	}
+	cm.hold_flag == true;
 	_homing_axis_move(axis, hm.latch_backoff, hm.latch_velocity);
 	return (_set_homing_func(_homing_axis_zero_backoff));
 }

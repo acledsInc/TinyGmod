@@ -45,7 +45,7 @@
 /****** REVISIONS ******/
 
 #ifndef TINYG_FIRMWARE_BUILD
-#define TINYG_FIRMWARE_BUILD   		451.03	// Testing homing -
+#define TINYG_FIRMWARE_BUILD   		451.03	// Testing homing - Adding homing search failed test (untested as of yet)
 
 #endif
 #define TINYG_FIRMWARE_VERSION		0.97						// firmware major version

@@ -237,6 +237,7 @@ typedef struct cmSingleton {			// struct to manage cm globals and cycles
 	uint8_t cycle_state;				// cycs
 	uint8_t motion_state;				// momo
 	uint8_t hold_state;					// hold: feedhold sub-state machine
+	uint8_t hold_flag;					// set is a hold is processed. Cleared by canned cycle using it
 	uint8_t homing_state;				// home: homing cycle sub-state machine
 	uint8_t homed[AXES];				// individual axis homing flags
 

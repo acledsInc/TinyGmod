@@ -211,8 +211,10 @@ stat_t mp_exec_aline(mpBuf_t *bf)
 	if (cm.hold_state == FEEDHOLD_SYNC) { cm.hold_state = FEEDHOLD_PLAN;}
 
 	// Look for the end of the decel to go into HOLD state
+	// Set hold_flag so homing, probing, etc can test if a feedhold occurred
 	if ((cm.hold_state == FEEDHOLD_DECEL) && (status == STAT_OK)) {
 		cm.hold_state = FEEDHOLD_HOLD;
+		cm.hold_flag = true;
 		cm_set_motion_state(MOTION_HOLD);
 		sr_request_status_report(SR_REQUEST_IMMEDIATE);
 	}
