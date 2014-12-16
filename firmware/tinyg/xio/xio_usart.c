@@ -302,7 +302,8 @@ static int _gets_helper(xioDev_t *d, xioUsart_t *dx)
 		d->signal = XIO_SIG_EOL;
 		return (XIO_BUFFER_FULL);
 	}
-	if ((c == CR) || (c == LF)) {				// handle CR, LF termination
+//	if ((c == CR) || (c == LF)) {				// handle CR, LF termination
+	if ((c == CR) || (c == LF) || (c == '|')) {	// handle CR, LF and pipe termination
 		d->buf[(d->len)++] = NUL;
 		d->signal = XIO_SIG_EOL;
 		d->flag_in_line = false;				// clear in-line state (reset)

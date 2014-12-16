@@ -75,7 +75,6 @@ struct hmHomingSingleton {			// persistent homing runtime variables
 	uint8_t saved_feed_rate_mode;	// G93, G94 global setting
 	float saved_feed_rate;			// F setting
 	float saved_jerk;				// saved and restored for each axis homed
-//	float target_position;          // saved prior to initiating moves, for verifying post-move position
 };
 static struct hmHomingSingleton hm;
 
@@ -363,8 +362,6 @@ static stat_t _homing_axis_clear(int8_t axis)				// first clear move
 static stat_t _homing_axis_search(int8_t axis)				// start the search
 {
 	cm_set_axis_jerk(axis, cm.a[axis].jerk_homing);			// use the homing jerk for search onward
-//	hm.target_position = hm.search_travel + cm_get_absolute_position(RUNTIME, axis);	// search target position
-//	printf ("S: %f %f %f\n", hm.target_position, hm.search_travel, cm_get_absolute_position(RUNTIME, axis));
 	_homing_axis_move(axis, hm.search_travel, hm.search_velocity);
     return (_set_homing_func(_homing_axis_latch));
 }
@@ -400,7 +397,7 @@ static stat_t _homing_axis_set_zero(int8_t axis)			// set zero and finish up
 	if (hm.set_coordinates != false) {
 		cm_set_position(axis, 0);
 		cm.homed[axis] = true;
-	} else { // do not set axis if in G28.4 cycle
+	} else {												// do not set axis if in G28.4 cycle
 		cm_set_position(axis, cm_get_work_position(RUNTIME, axis));
 	}
 	cm_set_axis_jerk(axis, hm.saved_jerk);					// restore the max jerk value
@@ -443,7 +440,7 @@ static stat_t _homing_abort(int8_t axis)
 }
 */
 /*
- * _homing_error_exit()
+ * _homing_error_exit() - end homing cycle in progress
  */
 
 static stat_t _homing_error_exit(int8_t axis, stat_t status)
@@ -453,12 +450,21 @@ static stat_t _homing_error_exit(int8_t axis, stat_t status)
 	nv_reset_nv_list();
 	nv_add_conditional_message((char_t *)get_status_message(status));
 	nv_print_list(status, TEXT_INLINE_VALUES, JSON_RESPONSE_FORMAT);
+
+	// This may be required for new switches. +++++ NEEDS TESTING
+#ifdef __NEW_SWITCHES	
+	_restore_switch_settings(&sw.s[hm.homing_switch_axis][hm.homing_switch_position]);
+#endif
+
+	// finish up
 	_homing_finalize_exit(axis);
 	return (status);										// homing state remains HOMING_NOT_HOMED
 }
 
 /*
  * _homing_finalize_exit() - helper to finalize homing
+ *
+ *	Assumes switch settings have been restored in _homing_axis_set_zero() or _homing_error_exit()
  */
 
 static stat_t _homing_finalize_exit(int8_t axis)			// third part of return to home
