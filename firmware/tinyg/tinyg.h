@@ -45,9 +45,9 @@
 /****** REVISIONS ******/
 
 #ifndef TINYG_FIRMWARE_BUILD
-#define TINYG_FIRMWARE_BUILD   		451.03	// Testing homing - Adding homing search failed test (untested as of yet)
-
+#define TINYG_FIRMWARE_BUILD   		451.04	// Testing homing - Tested homing search failed test; Added pipe | as an end-of-line character
 #endif
+
 #define TINYG_FIRMWARE_VERSION		0.97						// firmware major version
 #define TINYG_CONFIG_VERSION		5							// CV values start at 5 for backwards compatibility
 #define TINYG_HARDWARE_PLATFORM		HW_PLATFORM_TINYG_XMEGA		// see hardware.h
