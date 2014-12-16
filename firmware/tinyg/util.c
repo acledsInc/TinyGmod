@@ -154,9 +154,11 @@ float max4(float x1, float x2, float x3, float x4)
 }
 
 /**** String utilities ****
- * strcpy_U() 	   - strcpy workalike to get around initial NUL for blank string - possibly wrong
- * isnumber() 	   - isdigit that also accepts plus, minus, and decimal point
- * escape_string() - add escapes to a string - currently for quotes only
+ * strcpy_U()		- strcpy workalike to get around initial NUL for blank string - possibly wrong
+ * isnumber()		- isdigit that also accepts plus, minus, and decimal point
+ * escape_string()	- add escapes to a string - currently for quotes only
+ * strip()			- strip whitespace and quotes from a string
+ *					  adapted from: http://stackoverflow.com/questions/122616/how-do-i-trim-leading-trailing-whitespace-in-a-standard-way
  */
 
 /*
@@ -189,6 +191,22 @@ char_t *escape_string(char_t *dst, char_t *src)
 	}
 	return (start_dst);
 }
+/*
+char_t *strip(char_t *str)
+{
+	char_t *end;
+
+	while(isspace(*str)) str++;			// Trim leading space
+	if(*str == 0)						// All spaces?
+		return str;
+
+	end = str + strlen(str) - 1;		// Trim trailing space
+	while(end > str && isspace(*end)) end--;
+
+	*(end+1) = 0;						// Write new null terminator
+	return str;
+}
+*/
 
 /*
  * pstr2str() - return an AVR style progmem string as a RAM string. No effect on ARMs

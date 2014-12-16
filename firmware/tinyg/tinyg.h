@@ -45,7 +45,7 @@
 /****** REVISIONS ******/
 
 #ifndef TINYG_FIRMWARE_BUILD
-#define TINYG_FIRMWARE_BUILD   		451.04	// Testing homing - Tested homing search failed test; Added pipe | as an end-of-line character
+#define TINYG_FIRMWARE_BUILD   		451.05	// Testing homing - Strips leading quotes in command strings for easier testing
 #endif
 
 #define TINYG_FIRMWARE_VERSION		0.97						// firmware major version
