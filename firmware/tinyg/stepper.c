@@ -438,6 +438,12 @@ stat_t st_motor_power_callback() 	// called by controller
 	// manage power for each motor individually
 	for (uint8_t motor = MOTOR_1; motor < MOTORS; motor++) {
 
+		// skip this motor if always on or disabled
+		if ((st_cfg.mot[motor].power_mode == MOTOR_ALWAYS_POWERED) ||
+			(st_cfg.mot[motor].power_mode == MOTOR_DISABLED)) {
+			continue;
+		}
+
 		// start timeouts initiated during a load so the loader does not need to burn these cycles
 		if (st_run.mot[motor].power_state == MOTOR_POWER_TIMEOUT_START) {
 			st_run.mot[motor].power_state = MOTOR_POWER_TIMEOUT_COUNTDOWN;

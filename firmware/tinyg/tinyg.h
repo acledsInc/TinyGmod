@@ -45,7 +45,7 @@
 /****** REVISIONS ******/
 
 #ifndef TINYG_FIRMWARE_BUILD
-#define TINYG_FIRMWARE_BUILD   		451.06	// Testing motor power management - $1pm modes - interim commit
+#define TINYG_FIRMWARE_BUILD   		451.07	// Testing motor power management - $1pm modes - runs all tests
 #endif
 
 #define TINYG_FIRMWARE_VERSION		0.97						// firmware major version
