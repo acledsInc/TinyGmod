@@ -971,8 +971,14 @@ stat_t st_prep_line(float travel_steps[], float following_error[], float segment
 	float correction_steps;
 	for (uint8_t motor=0; motor<MOTORS; motor++) {	// I want to remind myself that this is motors, not axes
 
+		// Skip this motor if there are no new steps or it's disabled. Leave all other values intact.
+		if ((fp_ZERO(travel_steps[motor])) || (st_cfg.mot[motor].power_mode == MOTOR_DISABLED)) {
+			st_pre.mot[motor].substep_increment = 0; 
+			continue;
+		}
+
 		// Skip this motor if there are no new steps. Leave all other values intact.
-		if (fp_ZERO(travel_steps[motor])) { st_pre.mot[motor].substep_increment = 0; continue;}
+//		if (fp_ZERO(travel_steps[motor])) { st_pre.mot[motor].substep_increment = 0; continue;}
 
 		// Setup the direction, compensating for polarity.
 		// Set the step_sign which is used by the stepper ISR to accumulate step position
@@ -1169,7 +1175,9 @@ stat_t st_set_pm(nvObj_t *nv)			// motor power mode
 	if (nv->value >= MOTOR_POWER_MODE_MAX_VALUE) return (STAT_INPUT_VALUE_UNSUPPORTED);
 	set_ui8(nv);
 
-	if (fp_ZERO(nv->value)) {			// people asked this setting take effect immediately, hence:
+	// Settings should take effect immediately. 
+	// Since we are doing a config we must assume we are not currently in a cycle or moving.
+	if (fp_EQ(nv->value, MOTOR_ALWAYS_POWERED)) {
 		_energize_motor(_get_motor(nv->index), st_cfg.motor_power_timeout);
 	} else {
 		_deenergize_motor(_get_motor(nv->index));

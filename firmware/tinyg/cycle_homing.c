@@ -321,10 +321,7 @@ static stat_t _homing_axis_start(int8_t axis)
 	// disable the limit switch parameter if there is no limit switch
 	if (get_switch_mode(hm.limit_switch) == SW_MODE_DISABLED) hm.limit_switch = -1;
 #else
-//	switch_t *s = &sw.s[hm.homing_switch_axis][hm.homing_switch_position];
-//	_bind_switch_settings(s);
 	_bind_switch_settings(&sw2.s[hm.homing_switch_axis][hm.homing_switch_position]);
-
 	uint8_t sw_mode = get_switch_mode2(hm.homing_switch_axis, hm.homing_switch_position);
 	if ((sw_mode != SW_MODE_HOMING) && (sw_mode != SW_MODE_HOMING_LIMIT)) {
 		return (_set_homing_func(_homing_axis_start));
