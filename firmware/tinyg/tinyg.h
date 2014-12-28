@@ -45,7 +45,7 @@
 /****** REVISIONS ******/
 
 #ifndef TINYG_FIRMWARE_BUILD
-#define TINYG_FIRMWARE_BUILD   		451.08	// Added profile for CNC3020 generic Chinese engraving machine
+#define TINYG_FIRMWARE_BUILD   		451.09	// Added Amin limit to accommodate eStop switch for CNC3020 generic Chinese engraving machine
 #endif
 
 #define TINYG_FIRMWARE_VERSION		0.97						// firmware major version

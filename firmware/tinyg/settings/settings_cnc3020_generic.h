@@ -1,5 +1,5 @@
 /*
- * settings_cnc3020_generic.h - geberic CNC3020 CHinese engraving machine
+ * settings_cnc3020_generic.h - generic CNC3020 Chinese engraving machine
  * This file is part of the TinyG project
  *
  * Copyright (c) 2014 - 2015 Alden S. Hart, Jr.
@@ -41,11 +41,13 @@
 // ***> NOTE: The init message must be a single line with no CRs or LFs
 #define INIT_MESSAGE "Initializing configs to CNC3020 generic settings"
 
-//#define JERK_MAX 				400			// in millions mm/(min^3)
 #define JUNCTION_DEVIATION		0.05		// default value, in mm
 #define JUNCTION_ACCELERATION	100000		// centripetal acceleration around corners
 
 // **** settings.h overrides ****
+
+#undef SWITCH_TYPE
+#define SWITCH_TYPE 			SW_TYPE_NORMALLY_CLOSED	// to accommodate teh eStop switch / Amin
 
 // *** motor settings ***
 
@@ -139,7 +141,7 @@
 #define Z_JUNCTION_DEVIATION 	JUNCTION_DEVIATION
 #define Z_SWITCH_MODE_MIN 		SW_MODE_DISABLED
 #define Z_SWITCH_MODE_MAX 		SW_MODE_HOMING
-#define Z_SEARCH_VELOCITY 		400
+#define Z_SEARCH_VELOCITY 		4007
 #define Z_LATCH_VELOCITY 		100
 #define Z_LATCH_BACKOFF 		5
 #define Z_ZERO_BACKOFF 			1
@@ -153,7 +155,7 @@
 #define A_JERK_MAX 				(X_JERK_MAX*(360/M1_TRAVEL_PER_REV))
 #define A_JUNCTION_DEVIATION	JUNCTION_DEVIATION
 #define A_RADIUS 				(M1_TRAVEL_PER_REV/(2*3.14159628))
-#define A_SWITCH_MODE_MIN 		SW_MODE_HOMING
+#define A_SWITCH_MODE_MIN 		SW_MODE_LIMIT
 #define A_SWITCH_MODE_MAX 		SW_MODE_DISABLED
 #define A_SEARCH_VELOCITY 		600
 #define A_LATCH_VELOCITY 		100
