@@ -2,7 +2,7 @@
  * settings.h - default runtime settings
  * This file is part of the TinyG project
  *
- * Copyright (c) 2010 - 2014 Alden S. Hart Jr.
+ * Copyright (c) 2010 - 2015 Alden S. Hart Jr.
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -55,9 +55,8 @@
 #define NETWORK_MODE				NETWORK_STANDALONE
 
 #define JSON_VERBOSITY				JV_MESSAGES				// one of: JV_SILENT, JV_FOOTER, JV_CONFIGS, JV_MESSAGES, JV_LINENUM, JV_VERBOSE
-//#define JSON_SYNTAX_MODE 			JSON_SYNTAX_STRICT		// one of JSON_SYNTAX_RELAXED, JSON_SYNTAX_STRICT
 #define JSON_SYNTAX_MODE 			JSON_SYNTAX_RELAXED		// one of JSON_SYNTAX_RELAXED, JSON_SYNTAX_STRICT
-#define JSON_FOOTER_STYLE			1						// 1 = footer w/checksum, 2 = footer w/window slots
+#define JSON_FOOTER_STYLE			1						// 1 = footer w/o checksum, 2 = footer w/window slots
 #define JSON_FOOTER_DEPTH			0						// 0 = footer is child of R, 1 = footer is child of response object (deprecated)
 
 #define STATUS_REPORT_VERBOSITY		SR_FILTERED				// one of: SR_OFF, SR_FILTERED, SR_VERBOSE
@@ -81,11 +80,9 @@
 #define COM_ENABLE_FLOW_CONTROL		FLOW_CONTROL_XON		// FLOW_CONTROL_OFF, FLOW_CONTROL_XON, FLOW_CONTROL_RTS
 #define COM_ENABLE_WINDOW_MODE		false
 
-//**** DEBUG SETTINGS ****
+//**** DEBUG SETTINGS - enable these from tinyg.h ****
 
-#define __DEBUG_SETTINGS
 #ifdef __DEBUG_SETTINGS
-
 //#undef COM_ENABLE_WINDOW_MODE
 //#define COM_ENABLE_WINDOW_MODE				true
 
@@ -103,13 +100,14 @@
 #undef STATUS_REPORT_VERBOSITY
 //#define STATUS_REPORT_VERBOSITY		SR_VERBOSE				// one of: SR_OFF, SR_FILTERED, SR_VERBOSE
 #define STATUS_REPORT_VERBOSITY		SR_FILTERED				// one of: SR_OFF, SR_FILTERED, SR_VERBOSE
-#endif
+#endif	// __DEBUG_SETTINGS
 
 /**** MACHINE PROFILES ******************************************************/
 
 // machine default profiles - choose only one:
 
 //#include "settings/settings_default.h"				// Default settings for release
+#include "settings/settings_cnc3020_generic.h"		// CNC3020 generic Chinese engraving machine
 //#include "settings/settings_test.h"					// Settings for testing - not for release
 //#include "settings/settings_hammer.h"					// Hammer torque demo
 //#include "settings/settings_pendulum.h"				// Pendulum motion demo
@@ -117,7 +115,7 @@
 //#include "settings/settings_pocketnc.h"				// PocketNC 5 axis machining center
 //#include "settings/settings_probotixV90.h"			// Probotix FireballV90
 //#include "settings/settings_shapeoko375.h"			// Shapeoko 375mm kit
-#include "settings/settings_shapeoko2.h"				// Shapeoko2 standard kit
+//#include "settings/settings_shapeoko2.h"				// Shapeoko2 standard kit
 //#include "settings/settings_ultimaker.h"				// Ultimaker 3D printer
 //#include "settings/settings_zen7x12.h"				// Zen Toolworks 7x12
 

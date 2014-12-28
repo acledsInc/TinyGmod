@@ -280,6 +280,9 @@
     <Compile Include="settings.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="settings\settings_cnc3020_generic.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="settings\settings_default.h">
       <SubType>compile</SubType>
     </Compile>

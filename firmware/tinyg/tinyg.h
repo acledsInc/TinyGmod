@@ -2,7 +2,7 @@
  * tinyg.h - tinyg main header
  * This file is part of the TinyG project
  *
- * Copyright (c) 2010 - 2014 Alden S. Hart, Jr.
+ * Copyright (c) 2010 - 2015 Alden S. Hart, Jr.
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -45,7 +45,7 @@
 /****** REVISIONS ******/
 
 #ifndef TINYG_FIRMWARE_BUILD
-#define TINYG_FIRMWARE_BUILD   		451.07	// Testing motor power management - $1pm modes - runs all tests
+#define TINYG_FIRMWARE_BUILD   		451.08	// Added profile for CNC3020 generic Chinese engraving machine
 #endif
 
 #define TINYG_FIRMWARE_VERSION		0.97						// firmware major version
@@ -56,7 +56,7 @@
 
 /****** COMPILE-TIME SETTINGS ******/
 
-#define __STEP_CORRECTION
+#define __STEP_CORRECTION					// enable correction of following error (virtual encoder feedback)
 //#define __NEW_SWITCHES					// Using G2 style switch code
 
 #define __TEXT_MODE							// enables text mode	(~10Kb)
@@ -66,6 +66,7 @@
 
 /****** DEVELOPMENT SETTINGS ******/
 
+//#define __DEBUG_SETTINGS					// enables debug settings in profile
 #define __DIAGNOSTIC_PARAMETERS				// enables system diagnostic parameters (_xx) in config_app
 //#define __CANNED_STARTUP					// run any canned startup moves
 
