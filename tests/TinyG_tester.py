@@ -5,8 +5,9 @@
     pyserial must be installed first - run this from term window: 
     sudo easy_install pyserial
 
-    TinyG_tester.py build 003 - Runs a simple test from a root directory
+    TinyG_tester.py build 005 - Capturing responses - interim commit
 """
+
 import sys, os, re
 import glob
 import serial
@@ -55,51 +56,6 @@ def serial_ports():
     return None
 
 
-def nonblocking_readlines(f):
-    """Generator which yields lines from F (a file object, used only for its fileno())
-       without blocking.  If there is no data, you get an endless stream of empty
-       strings until there is data again (caller is expected to sleep for a while).
-       Newlines are normalized to the Unix standard.
-
-       Reference: http://code.activestate.com/recipes/578900-non-blocking-readlines/
-    """
-
-    fd = f.fileno()
-    fl = fcntl.fcntl(fd, fcntl.F_GETFL)
-    fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
-    enc = locale.getpreferredencoding(False)
-
-    buf = bytearray()
-    while True:
-        try:
-            block = os.read(fd, 8192)
-        except BlockingIOError:
-            yield ""
-            continue
-
-        if not block:
-            if buf:
-                yield buf.decode(enc)
-                buf.clear()
-            break
-
-        buf.extend(block)
-
-        while True:
-            r = buf.find(b'\r')
-            n = buf.find(b'\n')
-            if r == -1 and n == -1: break
-
-            if r == -1 or r > n:
-                yield buf[:(n+1)].decode(enc)
-                buf = buf[(n+1):]
-            elif n == -1 or n > r:
-                yield buf[:r].decode(enc) + '\n'
-                if n == r+1:
-                    buf = buf[(r+2):]
-                else:
-                    buf = buf[(r+1):]
-
 def walk(top, func, args):
     """ Local version of the os.path.walk routine """
 
@@ -124,30 +80,41 @@ def walk(top, func, args):
 def test_runner(args, top, name):
     """ Run a single test file """
 
-    port = args[0]                      # listed for redability
+    port = args[0]                      # renamed for readability
     outfile = args[1]
     action = args[2]
 
+    # Open test file or die trying
     filepath = os.path.normpath(os.path.join(top, name))
     try:
         testfile = open(filepath, "r" "utf8")
         print ("Running %s" % filepath)
     except:
         print ("Could not open test file: \"%s\"" % filepath)
-        return
+        return []
 
+    # Send the test
     lines = testfile.readlines()        # read line including newline at end
     for line in lines:
-#        print line[:-1]
         port.write(line)
-#        response = port.readlines()
-#        if (response == "\n"):
-#        if (response == None):
-#            continue
-#        print response
 
-    response = port.readlines()
-    print response
+    # Collect the responses
+    responses = []
+    nonecount = 0
+    while (True):
+        response = port.readlines()
+#        print response
+        if response == []:              # non-blocking read returned nothing
+            nonecount += 1
+            if nonecount > 10:
+                break
+            continue
+        
+        responses.extend(response)
+        nonecount = 0
+        
+    print responses
+    return responses
     
 ################################# MAIN PROGRAM BODY ###########################################
 
@@ -159,6 +126,7 @@ def main():
     CONFIGFILE = "tests_to_run.cfg"
     OUTFILE = "outfile.txt"
     ACTION = True                   # Set to false for dry run
+    RESPONSE_TIMEOUT = 0.01         # Seconds
 
 ### Initialization ###
 
@@ -192,7 +160,7 @@ def main():
         testroots.close()
         sys.exit(1)
     else:
-        port = serial.Serial(ports, 115200, timeout=0, rtscts=1)    # open for non-blocking reads
+        port = serial.Serial(ports, 115200, rtscts=1, timeout=RESPONSE_TIMEOUT)
         if (not port.isOpen):
             print("Could not open serial port: \"%s\" - EXITING" % ports)
             testroots.close()
@@ -209,9 +177,6 @@ def main():
         testroot = testroot[:-1]
         print("Starting tests in %s" % testroot)
         walk(os.path.join(ROOTDIR, testroot), test_runner, args)
-#        walk(os.path.normpath(os.path.join(ROOTDIR, testroot)), test_runner, args)
-#        walk(testroot, test_runner, args)
-#        walk(".", test_runner, args)
 
     outfile.close()
     testroots.close()
