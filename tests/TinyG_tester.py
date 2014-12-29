@@ -5,7 +5,7 @@
     pyserial must be installed first - run this from term window: 
     sudo easy_install pyserial
 
-    Build 001 - Basic functionality
+    Build 002 - Interim commit
 """
 import sys, os, re
 import glob
@@ -56,10 +56,21 @@ def serial_ports():
 
 def walk(top, func, arg):
     """ Local version of the os.path.walk routine """
+
+#    top = "./test_root"
+#    top = "./" + top
+#    print top
+
+    abspath = os.path.abspath(top)
+    print abspath
+
     try:
-        names = os.listdir(top)
+        names = os.listdir(abspath)
     except os.error:
+        print os.error
+        print ("directory not found: %s" % abspath)
         return
+    print names
 #    names = names.sort()
     func(arg, top, names)           # Call out to the function that was passed in
     exceptions = ('.', '..')
@@ -69,53 +80,81 @@ def walk(top, func, arg):
             if os.path.isdir(name):
                 walk(name, func, arg)
 
+def test_runner(args, top, names):
+    
+    print "Running Test"
+    print args
+
+    args[0].write("G0x0y0\n")
+    args[0].write("m3\n")
+    args[0].write("G0x10y10\n")
+    args[0].writelines("g0x0y0\n")
+    
+
 ################################# MAIN PROGRAM BODY ###########################################
 
 def main():
 
 ### Configuration ###
 
+    ROOTDIR = "."
     CONFIGFILE = "tests_to_run.cfg"
     OUTFILE = "outfile.txt"
+    ACTION = True                   # Set to false for dry run
 
 ### Initialization ###
 
-    # Locate and open the serial port
-    ports =  serial_ports()
-    if (ports):                     #We found a port
-        port = serial.Serial(ports,115200,rtscts=1)
-        
-        if (not port.isOpen):
-            print("Could not open serial port: \"%s\"" % ports)
-            sys.exit(1)
-        else:
-            print("Serial Port Opened: %s" % port.portstr)
-            
-    else:
-        print("Did not find a serial port" % ports)
-        sys.exit(1)
+    os.chdir(".")                   # Set current working directory to root so paths come out right
+    
 
     # Open the config file
-    testrootpath = os.path.normpath(os.path.join(".",CONFIGFILE))
+    testrootpath = os.path.normpath(os.path.join(ROOTDIR, CONFIGFILE))
     try:
         testroots = open(testrootpath, "r" "utf8")
     except:
-        print ("Could not open test config file: \"%s\"" % testrootpath)
-        port.close()
+        print ("Could not open test config file: \"%s\" - EXITING" % testrootpath)
         sys.exit(1)
 
+    # Locate and open the serial port
+    ports =  serial_ports()
+
+    if (not ports):
+        print("Did not find a serial port - EXITING")
+        testroots.close()
+        sys.exit(1)
+    else:
+        port = serial.Serial(ports,115200,rtscts=1)
+        if (not port.isOpen):
+            print("Could not open serial port: \"%s\" - EXITING" % ports)
+            testroots.close()
+            sys.exit(1)
+        else:
+            print("Serial Port Opened: %s" % port.portstr)
+
+    # Open a unique output file
+    outfilepath = os.path.normpath(os.path.join(ROOTDIR, OUTFILE))
+    try:
+        os.remove(outfilepath)
+    except:
+        pass
+    outfile = open(outfilepath,"a+w")
+
 ### Main Routine ###
+
+    args = (port, outfile, ACTION)
 
     for testroot in testroots:
 
         print("Starting tests in %s" % testroot)
+#        walk(os.path.join(ROOTDIR, testroot), test_runner, args)
+#        walk(os.path.normpath(os.path.join(ROOTDIR, testroot)), test_runner, args)
+#        walk(testroot, test_runner, args)
+        walk(".", test_runner, args)
 
-        port.write("G0x0y0\n")
-        port.write("m3\n")
-        port.write("G0x10y10\n")
-        port.writelines("g0x0y0\n")
-
-    print("Done\n")
+    outfile.close()
+    testroots.close()
+    port.close()
+    print("DONE\n")
 
 if __name__ == "__main__":
     main()
