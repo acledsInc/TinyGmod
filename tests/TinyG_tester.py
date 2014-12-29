@@ -55,36 +55,78 @@ def serial_ports():
     return None
 
 
-def walk(top, func, arg):
+def nonblocking_readlines(f):
+    """Generator which yields lines from F (a file object, used only for its fileno())
+       without blocking.  If there is no data, you get an endless stream of empty
+       strings until there is data again (caller is expected to sleep for a while).
+       Newlines are normalized to the Unix standard.
+
+       Reference: http://code.activestate.com/recipes/578900-non-blocking-readlines/
+    """
+
+    fd = f.fileno()
+    fl = fcntl.fcntl(fd, fcntl.F_GETFL)
+    fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+    enc = locale.getpreferredencoding(False)
+
+    buf = bytearray()
+    while True:
+        try:
+            block = os.read(fd, 8192)
+        except BlockingIOError:
+            yield ""
+            continue
+
+        if not block:
+            if buf:
+                yield buf.decode(enc)
+                buf.clear()
+            break
+
+        buf.extend(block)
+
+        while True:
+            r = buf.find(b'\r')
+            n = buf.find(b'\n')
+            if r == -1 and n == -1: break
+
+            if r == -1 or r > n:
+                yield buf[:(n+1)].decode(enc)
+                buf = buf[(n+1):]
+            elif n == -1 or n > r:
+                yield buf[:r].decode(enc) + '\n'
+                if n == r+1:
+                    buf = buf[(r+2):]
+                else:
+                    buf = buf[(r+1):]
+
+def walk(top, func, args):
     """ Local version of the os.path.walk routine """
 
-    top = "./test_root"
-#    print top
-
-    abspath = os.path.abspath(top)
-    print abspath
-
     try:
-        names = os.listdir(abspath)
+        names = os.listdir(top)
     except os.error:
-        print os.error
-        print ("directory not found: %s" % abspath)
+        print ("directory not found: %s" % top)
         return
 
     names.sort()                        # sort the list so it agrees with the user's directory listing
-    exceptions = ('.', '..')
+    exceptions = ('.', '..', '.DS_Store')
     for name in names:
         if name in exceptions:
             continue
-        
-        namepath = os.path.join(top, name)
-        if os.path.isdir(namepath):
-            walk(namepath, func, arg)
+
+        if os.path.isdir(name):
+            walk(name, func, args)
         else:
-            func(arg, top, name)        # Call out to the function that was passed in
+            func(args, top, name)       # Call out to the function that was passed in
+
 
 def test_runner(args, top, name):
     """ Run a single test file """
+
+    port = args[0]                      # listed for redability
+    outfile = args[1]
+    action = args[2]
 
     filepath = os.path.normpath(os.path.join(top, name))
     try:
@@ -94,15 +136,19 @@ def test_runner(args, top, name):
         print ("Could not open test file: \"%s\"" % filepath)
         return
 
-    testline = testfile.readline()
-    args[0].write(testline)
-    
-#    args[0].write("G0x0y0\n")
-#    args[0].write("m3\n")
-#    args[0].write("G0x10y10\n")
-#    args[0].writelines("g0x0y0\n")
-    
+    lines = testfile.readlines()        # read line including newline at end
+    for line in lines:
+#        print line[:-1]
+        port.write(line)
+#        response = port.readlines()
+#        if (response == "\n"):
+#        if (response == None):
+#            continue
+#        print response
 
+    response = port.readlines()
+    print response
+    
 ################################# MAIN PROGRAM BODY ###########################################
 
 def main():
@@ -146,7 +192,7 @@ def main():
         testroots.close()
         sys.exit(1)
     else:
-        port = serial.Serial(ports,115200,rtscts=1)
+        port = serial.Serial(ports, 115200, timeout=0, rtscts=1)    # open for non-blocking reads
         if (not port.isOpen):
             print("Could not open serial port: \"%s\" - EXITING" % ports)
             testroots.close()
@@ -160,6 +206,7 @@ def main():
 
     for testroot in testroots:
 
+        testroot = testroot[:-1]
         print("Starting tests in %s" % testroot)
         walk(os.path.join(ROOTDIR, testroot), test_runner, args)
 #        walk(os.path.normpath(os.path.join(ROOTDIR, testroot)), test_runner, args)
