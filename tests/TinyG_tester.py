@@ -5,7 +5,7 @@
     pyserial must be installed first - run this from term window: 
     sudo easy_install pyserial
 
-    TinyG_tester.py build 005 - Capturing responses - interim commit
+    TinyG_tester.py build 006 - Capturing responses; installed dummy analyser
 """
 
 import sys, os, re
@@ -77,6 +77,11 @@ def walk(top, func, args):
             func(args, top, name)       # Call out to the function that was passed in
 
 
+def test_wrapper(args, top, name):
+    """ Call test runner followd by test analyser """
+    test_analyser(args, top, name, test_runner(args, top, name))
+
+
 def test_runner(args, top, name):
     """ Run a single test file """
 
@@ -93,29 +98,38 @@ def test_runner(args, top, name):
         print ("Could not open test file: \"%s\"" % filepath)
         return []
 
-    # Send the test
+    # Send the test strings and collect responses
+    responses = []
     lines = testfile.readlines()        # read line including newline at end
     for line in lines:
         port.write(line)
 
-    # Collect the responses
-    responses = []
+        response = port.readlines()
+        if response != []:              # non-blocking read returned something
+            responses.extend(response)
+
+    # Collect the remaining responses
     nonecount = 0
     while (True):
         response = port.readlines()
-#        print response
-        if response == []:              # non-blocking read returned nothing
+        if response != []:
+            responses.extend(response)
+            nonecount = 0
+        else:
             nonecount += 1
-            if nonecount > 10:
+            if nonecount > 4:
                 break
-            continue
-        
-        responses.extend(response)
-        nonecount = 0
-        
-    print responses
+ 
     return responses
-    
+
+
+def test_analyser(args, top, name, responses):
+    """ Analyze test results """
+    for response in responses:
+        print response[:-1]
+    return
+
+
 ################################# MAIN PROGRAM BODY ###########################################
 
 def main():
@@ -126,13 +140,12 @@ def main():
     CONFIGFILE = "tests_to_run.cfg"
     OUTFILE = "outfile.txt"
     ACTION = True                   # Set to false for dry run
-    RESPONSE_TIMEOUT = 0.01         # Seconds
+    RESPONSE_TIMEOUT = 0.02         # Seconds
 
 ### Initialization ###
 
     os.chdir(".")                   # Set current working directory to root so paths come out right
     
-
     ### Open the config file
     
     testrootpath = os.path.normpath(os.path.join(ROOTDIR, CONFIGFILE))
@@ -176,7 +189,7 @@ def main():
 
         testroot = testroot[:-1]
         print("Starting tests in %s" % testroot)
-        walk(os.path.join(ROOTDIR, testroot), test_runner, args)
+        walk(os.path.join(ROOTDIR, testroot), test_wrapper, args)
 
     outfile.close()
     testroots.close()
