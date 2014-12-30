@@ -5,7 +5,7 @@
     pyserial must be installed first - run this from term window: 
     sudo easy_install pyserial
 
-    TinyG_tester.py build 006 - Capturing responses; installed dummy analyser
+    TinyG_tester.py build 007 - Installing JSON parsing for responses
 """
 
 import sys, os, re
@@ -100,6 +100,7 @@ def test_runner(args, top, name):
 
     # Send the test strings and collect responses
     responses = []
+    port.write("{\"js\":1}")                 # set device to strict JSON mode
     lines = testfile.readlines()        # read line including newline at end
     for line in lines:
         port.write(line)
@@ -125,8 +126,35 @@ def test_runner(args, top, name):
 
 def test_analyser(args, top, name, responses):
     """ Analyze test results """
+
     for response in responses:
-        print response[:-1]
+        json_input = response[:-1]
+        data = json.loads(json_input)
+
+        try:
+            print "Response", data['r']
+        except:
+            pass
+                
+        try:
+            print "Footer", data['f']
+        except:
+            pass
+
+        try:
+            print "Status", data['sr']
+        except:
+            pass
+
+#        encoded = json.dumps(json_data)
+#        print encoded
+#        print (json_data)
+#        data = json.loads(encoded)
+#        print data
+#        try:
+#            print data['sr']
+#        except (ValueError, KeyError, TypeError):
+#            print "JSON format error %s" % data 
     return
 
 
@@ -180,6 +208,9 @@ def main():
             sys.exit(1)
         else:
             print("Serial Port Opened: %s" % port.portstr)
+
+    port.write("{\"js\":1}")                 # set device to strict JSON mode
+
 
 ### Main Routine ###
 
