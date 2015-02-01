@@ -49,7 +49,7 @@ typedef struct arArcSingleton {	// persistent planner and runtime variables
 	float seg_distance;
 	float seg_time;
 
-	// 
+	//
 	uint8_t plane_axis_0;		// arc plane axis 0 - e.g. X for G17
 	uint8_t plane_axis_1;		// arc plane axis 1 - e.g. Y for G17
 	uint8_t linear_axis; 		// linear axis (normal to plane)

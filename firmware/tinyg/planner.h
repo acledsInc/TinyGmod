@@ -180,7 +180,7 @@ typedef struct mpBuffer {			// See Planning Velocity Notes for variable usage
 	float delta_vmax;				// max velocity difference for this move
 	float braking_velocity;			// current value for braking velocity
 
-	uint8_t jerk_axis;				// rate limiting axis used to compute jerk for the move
+//	uint8_t jerk_axis;				// rate limiting axis used to compute jerk for the move
 	float jerk;						// maximum linear jerk term for this move
 	float recip_jerk;				// 1/Jm used for planning (computed and cached)
 	float cbrt_jerk;				// cube root of Jm used for planning (computed and cached)
@@ -206,6 +206,11 @@ typedef struct mpMoveMasterSingleton { // common variables for planning (move ma
 	float jerk;						// jerk values cached from previous block
 	float recip_jerk;
 	float cbrt_jerk;
+
+	float x_jerk;					// +++ diagnostic
+	float z_jerk;					// +++ diagnostic
+	float x_jerk_scaled;			// +++ diagnostic
+	float z_jerk_scaled;			// +++ diagnostic
 
 	magic_t magic_end;
 } mpMoveMasterSingleton_t;
