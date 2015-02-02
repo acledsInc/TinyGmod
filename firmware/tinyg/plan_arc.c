@@ -39,7 +39,6 @@ arc_t arc;
 // Local functions
 static stat_t _compute_arc(void);
 static stat_t _compute_arc_offsets_from_radius(void);
-//static float _get_arc_time (const float linear_travel, const float angular_travel, const float radius);
 static void _estimate_arc_time(void);
 static float _get_theta(const float x, const float y);
 static stat_t _test_arc_soft_limits(void);
