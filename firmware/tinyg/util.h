@@ -91,6 +91,10 @@ uint32_t SysTickTimer_getValue(void);
 #define square(x) ((x)*(x))		/* UNSAFE */
 #endif
 
+#ifndef cube
+#define cube(x) ((x)*(x)*(x))	/* UNSAFE */
+#endif
+
 // side-effect safe forms of min and max
 #ifndef max
 #define max(a,b) \

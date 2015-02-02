@@ -36,6 +36,11 @@
 extern "C"{
 #endif
 */
+
+our_abs(const float number) {
+	return number < 0 ? -number : number;
+}
+
 /*
  * mp_calculate_trapezoid() - calculate trapezoid parameters
  *
@@ -243,21 +248,36 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 		// Asymmetric HT' rate-limited case. This is relatively expensive but it's not called very often
 		// iteration trap: uint8_t i=0;
 		// iteration trap: if (++i > TRAPEZOID_ITERATION_MAX) { fprintf_P(stderr,PSTR("_calculate_trapezoid() failed to converge"));}
-
+/*
+        bf->cruise_velocity = mp_get_meet_velocity(bf->entry_velocity, bf->exit_velocity, bf->length, bf);
+*/
 		float computed_velocity = bf->cruise_vmax;
+		uint8_t iterations = 0;
 		do {
 			bf->cruise_velocity = computed_velocity;	// initialize from previous iteration
 			bf->head_length = mp_get_target_length(bf->entry_velocity, bf->cruise_velocity, bf);
 			bf->tail_length = mp_get_target_length(bf->exit_velocity, bf->cruise_velocity, bf);
 			if (bf->head_length > bf->tail_length) {
 				bf->head_length = (bf->head_length / (bf->head_length + bf->tail_length)) * bf->length;
-				computed_velocity = mp_get_target_velocity(bf->entry_velocity, bf->head_length, bf);
+				if (++iterations < TRAPEZOID_ITERATION_MAX) {
+					computed_velocity = mp_get_target_velocity(bf->entry_velocity, bf->head_length, bf);
+				} else {
+					computed_velocity = (computed_velocity + mp_get_target_velocity(bf->exit_velocity, bf->head_length, bf))/2;
+					fprintf_P(stderr,PSTR("H"));
+				}
 			} else {
 				bf->tail_length = (bf->tail_length / (bf->head_length + bf->tail_length)) * bf->length;
-				computed_velocity = mp_get_target_velocity(bf->exit_velocity, bf->tail_length, bf);
+				if (++iterations < TRAPEZOID_ITERATION_MAX) {
+					computed_velocity = mp_get_target_velocity(bf->exit_velocity, bf->tail_length, bf);
+				} else {
+					computed_velocity = (computed_velocity + mp_get_target_velocity(bf->exit_velocity, bf->tail_length, bf))/2;
+				//	fprintf_P(stderr,PSTR("_calculate_trapezoid() failed to converge"));
+					fprintf_P(stderr,PSTR("T"));
+				}
 			}
 			// insert iteration trap here if needed
 		} while ((fabs(bf->cruise_velocity - computed_velocity) / computed_velocity) > TRAPEZOID_ITERATION_ERROR_PERCENT);
+
 
 		// set velocity and clean up any parts that are too short
 		bf->cruise_velocity = computed_velocity;
@@ -346,7 +366,10 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 float mp_get_target_length(const float Vi, const float Vf, const mpBuf_t *bf)
 {
 //	return (Vi + Vf) * sqrt(fabs(Vf - Vi) * bf->recip_jerk);		// new formula
-	return (fabs(Vi-Vf) * sqrt(fabs(Vi-Vf) * bf->recip_jerk));		// old formula
+//	return (fabs(Vi-Vf) * sqrt(fabs(Vi-Vf) * bf->recip_jerk));		// old formula
+
+	const float delta_v = our_abs(Vi-Vf);
+		return (delta_v * sqrt(delta_v * bf->recip_jerk));		// old formula
 }
 
 /* Regarding mp_get_target_velocity:
@@ -393,27 +416,169 @@ float mp_get_target_length(const float Vi, const float Vf, const mpBuf_t *bf)
  *  J'(x) = (2*Vi*x - Vi² + 3*x²) / L²
  */
 
-#define GET_VELOCITY_ITERATIONS 0		// must be 0, 1, or 2
+//#define __VELOCITY_DIRECT_SOLUTION
+//#define __VELOCITY_ITERATION_METHOD
+#define __VELOCITY_LINEAR_SNAP
+
+#define __VELOCITY_ITERATIONS 0		// must be 0, 1, or 2
+
 float mp_get_target_velocity(const float Vi, const float L, const mpBuf_t *bf)
 {
-    // 0 iterations (a reasonable estimate)
-    float estimate = pow(L, 0.66666666) * bf->cbrt_jerk + Vi;
+#ifdef __VELOCITY_DIRECT_SOLUTION
+	float JmL2 = bf->jerk*square(L);
+	float Vi2 = square(Vi);
+	float Vi3x16 = (16 * Vi * Vi2);
+	float Ia = cbrt(3*sqrt(3) * sqrt(27*square(JmL2) + (2*JmL2*Vi3x16)) + 27*JmL2 + Vi3x16);
+	mm.estimate = ((Ia/cbrt(2) + 4*cbrt(2)*Vi2/Ia - Vi)/3);
+#endif	// __VELOCITY_DIRECT_SOLUTION
 
-#if (GET_VELOCITY_ITERATIONS >= 1)
-    // 1st iteration
-    float L_squared = L*L;
-    float Vi_squared = Vi*Vi;
-    float J_z = ((estimate - Vi) * (Vi + estimate) * (Vi + estimate)) / L_squared - bf->jerk;
-    float J_d = (2*Vi*estimate - Vi_squared + 3*(estimate*estimate)) / L_squared;
-    estimate = estimate - J_z/J_d;
-#endif
-#if (GET_VELOCITY_ITERATIONS >= 2)
-    // 2nd iteration
-    J_z = ((estimate - Vi) * (Vi + estimate) * (Vi + estimate)) / L_squared - bf->jerk;
-    J_d = (2*Vi*estimate - Vi_squared + 3*(estimate*estimate)) / L_squared;
-    estimate = estimate - J_z/J_d;
-#endif
-    return estimate;
+#ifdef __VELOCITY_ITERATION_METHOD
+	// 0 iterations (a reasonable estimate)
+	mm.estimate = pow(L, 0.66666666) * bf->cbrt_jerk + Vi;
+
+	if (fp_ZERO(Vi)) {
+	#if (GET_VELOCITY_ITERATIONS >= 1)
+		// 1st iteration
+		float Jd = (3 * square(mm.estimate)) / square(L);
+		float Jz = cube(mm.estimate) / square(L) - bf->jerk;
+		mm.estimate -= Jz/Jd;
+	#endif
+	#if (GET_VELOCITY_ITERATIONS >= 2)
+		// 2nd iteration
+		Jd = (3 * square(mm.estimate)) / square(L);
+		Jz = cube(mm.estimate) / square(L) - bf->jerk;
+		mm.estimate -= Jz/Jd;
+	#endif
+
+	} else {
+	#if (GET_VELOCITY_ITERATIONS >= 1)
+		// 1st iteration
+		float L_squared = L*L;
+		float Vi_squared = Vi*Vi;
+		float Jz = ((mm.estimate - Vi) * (Vi + mm.estimate) * (Vi + mm.estimate)) / L_squared - bf->jerk;
+		float Jd = (2*Vi*mm.estimate - Vi_squared + 3*(mm.estimate*mm.estimate)) / L_squared;
+		mm.estimate = - Jz/Jd;
+	#endif
+
+	#if (GET_VELOCITY_ITERATIONS >= 2)
+		// 2nd iteration
+		Jz = ((mm.estimate - Vi) * (Vi + mm.estimate) * (Vi + mm.estimate)) / L_squared - bf->jerk;
+		Jd = (2*Vi*mm.estimate - Vi_squared + 3*(mm.estimate*mm.estimate)) / L_squared;
+		mm.estimate = - Jz/Jd;
+	#endif
+	}
+#endif // __VELOCITY_ITERATION_METHOD
+#ifdef __VELOCITY_LINEAR_SNAP
+
+// Here we define some static constants. Not trusting the compiler to precompile them, we precompute.
+// The naming is somewhat symbolic and very verbose, but still easier to understand than "i", "j", and "k".
+//f is added to the beginning when the first char would be a number:
+static const float sqrt_3 = 1.732050807568877;				// sqrt(3) = 1.732050807568877
+static const float third = 0.333333333333333;				// 1/3 = 0.333333333333333
+static const float f3_sqrt_3 = 5.196152422706631;			// 3*sqrt(3) = 5.196152422706631
+static const float f4_thirds_x_cbrt_5 = 2.279967928902263;	// 4/3*5^(1/3) = 2.279967928902263
+static const float f1_15th_x_2_3_rt_5 = 0.194934515880858;	// 1/15*5^(2/3) = 0.194934515880858
+//static const float SQRT_FIVE_SIXTHS = 0.9128709291753;	// sqrt(5/6)
+//static const float f27_sqrt_3 = 46.765371804359679;		// 27*sqrt(3) = 46.765371804359679
+//static const float f80_sqrt_3 = 138.56406460551016;		// 80*sqrt(3) = 138.56406460551016
+
+	// Why const? So that the compiler knows it'll never change once it's computed.
+	// Also, we ensure that it doesn't accidentally change once computed.
+	// Average cost: 0.14ms -- 140us (ATSAM8X3C/E @ 84 MHz)
+	const float j = bf->jerk;
+	const float j_sq = j*j;					//j^2
+
+	const float v_0_sq = Vi*Vi;				//v_0^2
+	const float v_0_cu = v_0_sq*Vi;			//v_0^3
+	const float v_0_cu_x_40 = v_0_cu*40;	//v_0^3*40
+
+	const float L_sq = L*L;								//L^2
+	const float L_sq_x_j_x_sqrt_3 = L_sq * j * sqrt_3;	//L^2*j*sqrt(3)
+	const float L_fourth = L_sq*L_sq;					//L^4
+
+	// v_1 = 4/3*5^(1/3) *  v_0^2 /(27*sqrt(3)*L^2*j + 40*v_0^3 + 3*sqrt(3)*sqrt(80*sqrt(3)*L^2*j*v_0^3 + 81*L^4*j^2))^(1/3)
+	//        + 1/15*5^(2/3)*(27*sqrt(3)*L^2*j + 40*v_0^3 + 3*sqrt(3)*sqrt(80*sqrt(3)*L^2*j*v_0^3 + 81*L^4*j^2))^(1/3)
+	//        - 1/3*v_0
+
+	// chunk_1 = pow( (27 * sqrt(3)*L^2*j     + 40 * v_0^3  + 3*sqrt(3) * sqrt(80 * v_0^3  * sqrt(3)*L^2*j     + 81 * L^4      * j^2 ) ), third)
+	//         = pow( (27 * L_sq_x_j_x_sqrt_3 + 40 * v_0_cu + f3_sqrt_3 * sqrt(80 * v_0_cu * L_sq_x_j_x_sqrt_3 + 81 * L_fourth * j_sq) ), third)
+
+	//         = pow( (27 * L_sq_x_j_x_sqrt_3 + 40 * v_0_cu + f3_sqrt_3 * sqrt(2 * 40 * v_0_cu * L_sq_x_j_x_sqrt_3 + 81 * L_fourth * j_sq) ), third)
+	//         = pow( (27 * L_sq_x_j_x_sqrt_3 + v_0_cu_x_40 + f3_sqrt_3 * sqrt(2 * v_0_cu_x_40 * L_sq_x_j_x_sqrt_3 + 81 * L_fourth * j_sq) ), third)
+
+	const float chunk_1_cubed = (27 * L_sq_x_j_x_sqrt_3 + v_0_cu_x_40 + f3_sqrt_3 * sqrt(2 * v_0_cu_x_40 * L_sq_x_j_x_sqrt_3 + 81 * L_fourth * j_sq) );
+	const float chunk_1 = cbrtf(chunk_1_cubed);
+
+	// v_1 = 4/3*5^(1/3)        * v_0^2  / chunk_1  +   1/15*5^(2/3)       * chunk_1  -  1/3  *v_0
+	// v_1 = f4_thirds_x_cbrt_5 * v_0_sq / chunk_1  +   f1_15th_x_2_3_rt_5 * chunk_1  -  third*v_0
+
+	float v_1 = (f4_thirds_x_cbrt_5 * v_0_sq) / chunk_1  +  f1_15th_x_2_3_rt_5 * chunk_1  -  third * Vi;
+//	return v_1;
+	mm.estimate = v_1;
+#endif	// __VELOCITY_LINEAR_SNAP
+
+	return mm.estimate;
+}
+
+/*
+ * mp_get_meet_velocity()
+ */
+const float mv_constant = 0.60070285354;				// sqrt(5) / (2 sqrt(2) nroot(3,4)) = 0.60070285354
+
+// Just calling this tl_constant. It's full name is:
+static const float tl_constant = 1.201405707067378;		// sqrt(5)/( sqrt(2)pow(3,4) )
+
+float mp_get_meet_velocity(const float v_0, const float v_2, const float L, const mpBuf_t *bf) {
+	//L_d(v_0, v_1, j) = (sqrt(5) abs(v_0 - v_1) (v_0 - 3v_1)) / (2sqrt(2) 3^(1 / 4) sqrt(j abs(v_0 - v_1)) (v_0 - v_1))
+	//                    sqrt(5) / (2 sqrt(2) nroot(3,4)) ( v_0 - 3 v_1) / ( sqrt(j abs(v_0 - v_1)))
+	//                    sqrt(5) / (2 sqrt(2) nroot(3,4)) = 0.60070285354
+
+	// Average cost: 0.18ms -- 180us
+
+	const float j = bf->jerk;
+	const float recip_j = bf->recip_jerk;
+
+	float l_c_head, l_c_tail, l_c; // calculated L
+	float l_d_head, l_d_tail, l_d; // calculated derivative of L with respect to v_1
+
+	// chunks of precomputed values
+	float sqrt_j_delta_v_0, sqrt_j_delta_v_1;
+
+	// v_1 is our estimated return value.
+	// We estimate with the speed obtained by L/2 traveled from the highest speed of v_0 or v_2.
+	float v_1 = mp_get_target_velocity(max(v_0, v_2), L/2, bf);
+	float last_v_1 = 0;
+
+	// Per iteration: 2 sqrt, 2 abs, 6 -, 4 +, 12 *, 3 /
+	int i = 0; // limit the iterations
+	while (i++ < TRAPEZOID_ITERATION_MAX && our_abs(last_v_1 - v_1) < 2) {
+		last_v_1 = v_1;
+
+		// Precompute some common chunks
+		sqrt_j_delta_v_0 = sqrt(j * our_abs(v_1-v_0));
+		sqrt_j_delta_v_1 = sqrt(j * our_abs(v_1-v_2));
+
+		l_c_head = tl_constant * sqrt_j_delta_v_0 * (v_0+v_1) * recip_j;
+		l_c_tail = tl_constant * sqrt_j_delta_v_1 * (v_2+v_1) * recip_j;
+
+		// l_c is our total-length calculation wih the curent v_1 estimate, minus the expected length.
+		// This makes l_c == 0 when v_1 is the correct value.
+		l_c = (l_c_head + l_c_tail) - L;
+
+		// Early escape -- if we're within 2 of "root" then we can call it good.
+		if (our_abs(l_c) < 2) {
+			break;
+		}
+
+		// l_d is the derivative of l_c, and is used for the Newton-Raphson iteration.
+		l_d_head = (mv_constant * (v_0 - 3*v_1)) / sqrt_j_delta_v_0;
+		l_d_tail = (mv_constant * (v_2 - 3*v_1)) / sqrt_j_delta_v_1;
+		l_d = l_d_head + l_d_tail;
+
+		v_1 = v_1 - (l_c/l_d);
+	}
+
+	return v_1;
 }
 /*
 #ifdef __cplusplus

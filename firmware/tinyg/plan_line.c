@@ -159,7 +159,7 @@ stat_t mp_aline(GCodeState_t *gm_in)
 	}
 	memcpy(&bf->gm, gm_in, sizeof(GCodeState_t));						// copy model state into planner buffer
 
-	_calc_jerk(bf);														// calculate jerk (this will move)
+	_calc_jerk(bf);														// calculate jerk value
 
 	// finish up the current block variables
 	if (cm_get_path_control(MODEL) != PATH_EXACT_STOP) {				// exact stop cases already zeroed
@@ -387,6 +387,7 @@ static void _calc_jerk(mpBuf_t *bf)
 			jerk = cm.a[axis].jerk_max / fabs(bf->unit[axis]);
 			if (jerk < bf->jerk) {
 				bf->jerk = jerk;
+				bf->jerk_axis = axis;						// +++ diagnostic
 			}
 		}
 	}

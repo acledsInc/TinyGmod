@@ -180,7 +180,7 @@ typedef struct mpBuffer {			// See Planning Velocity Notes for variable usage
 	float delta_vmax;				// max velocity difference for this move
 	float braking_velocity;			// current value for braking velocity
 
-//	uint8_t jerk_axis;				// rate limiting axis used to compute jerk for the move
+	uint8_t jerk_axis;				// +++ diagnostic: rate limiting axis used to compute jerk for the move
 	float jerk;						// maximum linear jerk term for this move
 	float recip_jerk;				// 1/Jm used for planning (computed and cached)
 	float cbrt_jerk;				// cube root of Jm used for planning (computed and cached)
@@ -203,14 +203,15 @@ typedef struct mpMoveMasterSingleton { // common variables for planning (move ma
 	magic_t magic_start;			// magic number to test memory integrity
 	float position[AXES];			// final move position for planning purposes
 
-	float jerk;						// jerk values cached from previous block
-	float recip_jerk;
-	float cbrt_jerk;
+//	float jerk;						// jerk values cached from previous block
+//	float recip_jerk;
+//	float cbrt_jerk;
 
 	float x_jerk;					// +++ diagnostic
 	float z_jerk;					// +++ diagnostic
 	float x_jerk_scaled;			// +++ diagnostic
 	float z_jerk_scaled;			// +++ diagnostic
+	float estimate;					// +++ diagnostic
 
 	magic_t magic_end;
 } mpMoveMasterSingleton_t;
@@ -338,6 +339,7 @@ float* mp_get_planner_position_vector(void);
 void mp_calculate_trapezoid(mpBuf_t *bf);
 float mp_get_target_length(const float Vi, const float Vf, const mpBuf_t *bf);
 float mp_get_target_velocity(const float Vi, const float L, const mpBuf_t *bf);
+float mp_get_meet_velocity(const float v_0, const float v_2, const float L, const mpBuf_t *bf);
 
 // plan_exec.c functions
 stat_t mp_exec_move(void);

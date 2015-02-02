@@ -45,7 +45,7 @@
 /****** REVISIONS ******/
 
 #ifndef TINYG_FIRMWARE_BUILD
-#define TINYG_FIRMWARE_BUILD   		439.05	// aline() arc tests - interim commit
+#define TINYG_FIRMWARE_BUILD   		439.06	// testing velocity computations - intermediate commit
 
 #endif
 #define TINYG_FIRMWARE_VERSION		0.97					// firmware major version
