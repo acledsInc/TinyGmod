@@ -42,7 +42,6 @@
 // aline planner routines / feedhold planning
 static void _calc_move_times(GCodeState_t *gms, const float axis_length[], const float axis_square[]);
 static void _calc_jerk(mpBuf_t *bf);
-static void _plan_block_list(mpBuf_t *bf, uint8_t *mr_flag);
 static float _get_junction_vmax(const float a_unit[], const float b_unit[]);
 static void _reset_replannable_list(void);
 
@@ -174,7 +173,7 @@ stat_t mp_aline(GCodeState_t *gm_in)
 	bf->braking_velocity = bf->delta_vmax;
 
 	// Note: these next lines must remain in exact order. Position must update before committing the buffer.
-	_plan_block_list(bf, &mr_flag);				// replan block list
+	mp_plan_block_list(bf, &mr_flag);			// replan block list
 	copy_vector(mm.position, bf->gm.target);	// set the planner position
 	mp_commit_write_buffer(MOVE_TYPE_ALINE); 	// commit current block (must follow the position update)
 	return (STAT_OK);
@@ -183,7 +182,7 @@ stat_t mp_aline(GCodeState_t *gm_in)
 /***** ALINE HELPERS *****
  * _calc_move_times()
  * _calc_jerk()
- * _plan_block_list()
+ * mp_plan_block_list()
  * _get_junction_vmax()
  * _reset_replannable_list()
  */
@@ -418,7 +417,7 @@ static void _calc_jerk(mpBuf_t *bf)
 	bf->cbrt_jerk = cbrt(bf->jerk);
 }
 
-/* _plan_block_list() - plans the entire block list
+/* mp_plan_block_list() - plans the entire block list
  *
  *	The block list is the circular buffer of planner buffers (bf's). The block currently
  *	being planned is the "bf" block. The "first block" is the next block to execute;
@@ -429,7 +428,7 @@ static void _calc_jerk(mpBuf_t *bf)
  *	If blocks following the first block are already optimally planned (non replannable)
  *	the first block that is not optimally planned becomes the effective first block.
  *
- *	_plan_block_list() plans all blocks between and including the (effective) first block
+ *	mp_plan_block_list() plans all blocks between and including the (effective) first block
  *	and the bf. It sets entry, exit and cruise v's from vmax's then calls trapezoid generation.
  *
  *	Variables that must be provided in the mpBuffers that will be processed:
@@ -486,7 +485,7 @@ static void _calc_jerk(mpBuf_t *bf)
  *	[2] The mr_flag is used to tell replan to account for mr buffer's exit velocity (Vx)
  *		mr's Vx is always found in the provided bf buffer. Used to replan feedholds
  */
-static void _plan_block_list(mpBuf_t *bf, uint8_t *mr_flag)
+void mp_plan_block_list(mpBuf_t *bf, uint8_t *mr_flag)
 {
 	mpBuf_t *bp = bf;
 
@@ -754,7 +753,7 @@ stat_t mp_plan_hold_callback()
 		bp->move_state = MOVE_NEW;				// tell _exec to re-use the bf buffer
 
 		_reset_replannable_list();				// make it replan all the blocks
-		_plan_block_list(mp_get_last_buffer(), &mr_flag);
+		mp_plan_block_list(mp_get_last_buffer(), &mr_flag);
 		cm.hold_state = FEEDHOLD_DECEL;			// set state to decelerate and exit
 		return (STAT_OK);
 	}
@@ -800,7 +799,7 @@ stat_t mp_plan_hold_callback()
 	bp->exit_vmax = bp->delta_vmax;
 
 	_reset_replannable_list();					// make it replan all the blocks
-	_plan_block_list(mp_get_last_buffer(), &mr_flag);
+	mp_plan_block_list(mp_get_last_buffer(), &mr_flag);
 	cm.hold_state = FEEDHOLD_DECEL;				// set state to decelerate and exit
 	return (STAT_OK);
 }

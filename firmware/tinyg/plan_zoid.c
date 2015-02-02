@@ -37,9 +37,7 @@ extern "C"{
 #endif
 */
 
-our_abs(const float number) {
-	return number < 0 ? -number : number;
-}
+float our_abs(const float number) { return number < 0 ? -number : number;}
 
 /*
  * mp_calculate_trapezoid() - calculate trapezoid parameters

@@ -1,5 +1,5 @@
 /*
- * planner.h - cartesian trajectory planning and motion execution
+ * planner.h - cartesian trajectory planning and motion execution (v8)
  * This file is part of the TinyG project
  *
  * Copyright (c) 2013 - 2015 Alden S. Hart, Jr.
@@ -303,6 +303,7 @@ void mp_end_dwell(void);
 stat_t mp_aline(GCodeState_t *gm_in);
 
 stat_t mp_plan_hold_callback(void);
+//stat_t mp_start_hold(void);
 stat_t mp_end_hold(void);
 stat_t mp_feed_rate_override(uint8_t flag, float parameter);
 
@@ -312,6 +313,11 @@ void mp_init_buffers(void);
 mpBuf_t * mp_get_write_buffer(void);
 void mp_unget_write_buffer(void);
 void mp_commit_write_buffer(const uint8_t move_type);
+//stat_t mp_plan_buffer();
+//void mp_complete_commit_write_buffer();
+void mp_plan_block_list(mpBuf_t *bf, uint8_t *mr_flag);
+//bool mp_is_it_phat_city_time();
+//void mp_planner_time_accounting();
 
 mpBuf_t * mp_get_run_buffer(void);
 uint8_t mp_free_run_buffer(void);

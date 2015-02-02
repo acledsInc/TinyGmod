@@ -40,7 +40,7 @@
 // ***> NOTE: The init message must be a single line with no CRs or LFs
 #define INIT_MESSAGE "Initializing configs to Probotix Fireball V90 profile"
 
-#define JUNCTION_DEVIATION		0.05		// default value, in mm
+#define JUNCTION_DEVIATION		0.01		// default value, in mm (smaller is faster)
 #define JUNCTION_ACCELERATION 	200000		// centripetal acceleration around corners
 
 // **** settings.h overrides ****
@@ -89,7 +89,7 @@
 #define X_FEEDRATE_MAX			X_VELOCITY_MAX		// xfr 		G1 max feed rate in mm/min
 #define X_TRAVEL_MIN			0					// xtn		monimum travel for soft limits
 #define X_TRAVEL_MAX			300					// xtm		travel between switches or crashes
-#define X_JERK_MAX				500					// xjm		jerk in mm/min^3 * million
+#define X_JERK_MAX				250					// xjm		jerk in mm/min^3 * million
 #define X_JERK_HOMING			X_JERK_MAX			// xjh
 #define X_JUNCTION_DEVIATION	JUNCTION_DEVIATION	// xjd
 #define X_SWITCH_MODE_MIN 		SW_MODE_HOMING		// xsn		SW_MODE_DISABLED, SW_MODE_HOMING, SW_MODE_LIMIT, SW_MODE_HOMING_LIMIT
@@ -104,7 +104,7 @@
 #define Y_FEEDRATE_MAX			Y_VELOCITY_MAX
 #define Y_TRAVEL_MIN			0
 #define Y_TRAVEL_MAX			450
-#define Y_JERK_MAX				500
+#define Y_JERK_MAX				250
 #define Y_JERK_HOMING			Y_JERK_MAX
 #define Y_JUNCTION_DEVIATION	JUNCTION_DEVIATION
 #define Y_SWITCH_MODE_MIN		SW_MODE_HOMING
