@@ -315,7 +315,7 @@ void mp_unget_write_buffer(void);
 void mp_commit_write_buffer(const uint8_t move_type);
 //stat_t mp_plan_buffer();
 //void mp_complete_commit_write_buffer();
-void mp_plan_block_list(mpBuf_t *bf, uint8_t *mr_flag);
+void mp_plan_block_list(mpBuf_t *bf, uint8_t mr_flag);
 //bool mp_is_it_phat_city_time();
 //void mp_planner_time_accounting();
 
