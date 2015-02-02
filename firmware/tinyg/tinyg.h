@@ -59,6 +59,7 @@
 //#define __NEW_SWITCHES					// Using v9 style switch code
 //#define __JERK_EXEC						// Use computed jerk (versus forward difference based exec)
 //#define __KAHAN							// Use Kahan summation in aline exec functions
+//#define __NEW_JUNCTION						// enable reduction of junction velocity math
 
 #define __TEXT_MODE							// enables text mode	(~10Kb)
 #define __HELP_SCREENS						// enables help screens (~3.5Kb)

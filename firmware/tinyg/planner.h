@@ -203,14 +203,14 @@ typedef struct mpMoveMasterSingleton { // common variables for planning (move ma
 	magic_t magic_start;			// magic number to test memory integrity
 	float position[AXES];			// final move position for planning purposes
 
-//	float jerk;						// jerk values cached from previous block
-//	float recip_jerk;
-//	float cbrt_jerk;
+	float jerk;						// cached jerk values cached from previous block
+	float recip_jerk;
+	float cbrt_jerk;
 
-	float x_jerk;					// +++ diagnostic
-	float z_jerk;					// +++ diagnostic
-	float x_jerk_scaled;			// +++ diagnostic
-	float z_jerk_scaled;			// +++ diagnostic
+//	float x_jerk;					// +++ diagnostic
+//	float z_jerk;					// +++ diagnostic
+//	float x_jerk_scaled;			// +++ diagnostic
+//	float z_jerk_scaled;			// +++ diagnostic
 	float estimate;					// +++ diagnostic
 
 	magic_t magic_end;

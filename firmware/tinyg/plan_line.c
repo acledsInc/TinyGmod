@@ -100,7 +100,6 @@ stat_t mp_aline(GCodeState_t *gm_in)
 	mpBuf_t *bf; 						// current move pointer
 	float exact_stop = 0;				// preset this value OFF
 	float junction_velocity;
-//	uint8_t mr_flag = false;
 
 	// compute some reusable terms
 	float axis_length[AXES];
@@ -353,14 +352,13 @@ static void _calc_move_times(GCodeState_t *gms, const float axis_length[], const
 /*
 This may be simpler than we thought. We should be able to set the jerk scaling to the lowest axis with a non-zero unit vector. You go through the axes one by one and compute the scaled jerk, then pick the highest jerk that does not violate any of the axes in the move.
 */
-//#define __JERK_1
-#define __JERK_2
-//#define __JERK_3
+//#define __OLD_JERK_
+#define __REVISED_JERK
 
 static void _calc_jerk(mpBuf_t *bf)
 {
 
-#ifdef __JERK_1
+#ifdef __OLD_JERK
 	float C;				// contribution term. C = T * a
 	float maxC = 0;
 
@@ -376,7 +374,7 @@ static void _calc_jerk(mpBuf_t *bf)
 	bf->jerk = cm.a[bf->jerk_axis].jerk_max * JERK_MULTIPLIER / fabs(bf->unit[bf->jerk_axis]);	// scale the jerk
 #endif
 
-#ifdef __JERK_2
+#ifdef __REVISED_JERK
 	// compute the jerk as the largest jerk that still meets axis constraints
 	bf->jerk = 8675309;										// a ridiculously large number
 	float jerk=0;
@@ -398,23 +396,21 @@ static void _calc_jerk(mpBuf_t *bf)
 	// +++ to here
 
 	bf->jerk *= JERK_MULTIPLIER;							// goose it!
-#endif
-#ifdef __JERK_3
-	bf->jerk = cm.a[AXIS_Z].jerk_max * JERK_MULTIPLIER;		// test setting it to Z and being done with it.
-#endif
+#endif	// __REVISED_JERK
 
 	// set up and pre-compute the jerk terms needed for this round of planning
-//	if (fabs(bf->jerk - mm.jerk) > JERK_MATCH_TOLERANCE) {	// specialized comparison for tolerance of delta
-//		mm.jerk = bf->jerk;									// used before this point next time around
-//		mm.recip_jerk = 1/bf->jerk;							// compute cached jerk terms used by planning
-//		mm.cbrt_jerk = cbrt(bf->jerk);
-//	}
-//	bf->recip_jerk = mm.recip_jerk;
-//	bf->cbrt_jerk = mm.cbrt_jerk;
-
-//	mm.jerk = bf->jerk;									// used before this point next time around
+	if (fabs(bf->jerk - mm.jerk) > JERK_MATCH_TOLERANCE) {	// specialized comparison for tolerance of delta
+		mm.jerk = bf->jerk;
+		mm.recip_jerk = 1/bf->jerk;							// compute cached jerk terms used by planning
+		mm.cbrt_jerk = cbrt(bf->jerk);
+	}
+	bf->recip_jerk = mm.recip_jerk;
+	bf->cbrt_jerk = mm.cbrt_jerk;
+	
+/*	// use this form if you don't want the caching
 	bf->recip_jerk = 1/bf->jerk;
 	bf->cbrt_jerk = cbrt(bf->jerk);
+*/
 }
 
 /* mp_plan_block_list() - plans the entire block list
@@ -500,7 +496,6 @@ void mp_plan_block_list(mpBuf_t *bf, uint8_t mr_flag)
 	while ((bp = mp_get_next_buffer(bp)) != bf) {
 		if ((bp->pv == bf) || (mr_flag == true))  {
 			bp->entry_velocity = bp->entry_vmax;		// first block in the list
-//			mr_flag = false;
 		} else {
 			bp->entry_velocity = bp->pv->exit_velocity;	// other blocks in the list
 		}
@@ -596,6 +591,12 @@ static void _reset_replannable_list()
  *	 	U[i]	Unit sum of i'th axis	fabs(unit_a[i]) + fabs(unit_b[i])
  *	 	Usum	Length of sums			Ux + Uy
  *	 	d		Delta of sums			(Dx*Ux+DY*UY)/Usum
+ *
+ *	POSSIBLE OPTIMIZATIONS:
+ *	- code this routine with ifdefs for the number of axes (compile time optimization)
+ *	- detect cases where unit vectors are zero, and compute accordingly (run time optimization)
+ *	- find a short cutout for +/- 1 cosine cases, and tune the 0.9xxxx term for tolerance
+ *	- make the system smart enough to detect which axes are in the code 
  */
 
 static float _get_junction_vmax(const float a_unit[], const float b_unit[])
@@ -625,11 +626,17 @@ static float _get_junction_vmax(const float a_unit[], const float b_unit[])
 	b_delta += square(b_unit[AXIS_B] * cm.a[AXIS_B].junction_dev);
 	b_delta += square(b_unit[AXIS_C] * cm.a[AXIS_C].junction_dev);
 
+#ifdef __NEW_JUNCTION	// the new junction code is suspect and causes stalls
+	float delta = (sqrt(a_delta) + sqrt(b_delta))/2;
+	float delta_over_costheta = delta / costheta;
+	float radius = sqrt(delta_over_costheta * delta_over_costheta - delta * delta);
+	return((radius * cm.junction_acceleration) / delta);
+#else
 	float delta = (sqrt(a_delta) + sqrt(b_delta))/2;
 	float sintheta_over2 = sqrt((1 - costheta)/2);
 	float radius = delta * sintheta_over2 / (1-sintheta_over2);
-	float velocity = sqrt(radius * cm.junction_acceleration);
-	return (velocity);
+	return(sqrt(radius * cm.junction_acceleration));
+#endif
 }
 
 /*************************************************************************
@@ -705,7 +712,6 @@ stat_t mp_plan_hold_callback()
 	mpBuf_t *bp; 				// working buffer pointer
 	if ((bp = mp_get_run_buffer()) == NULL) { return (STAT_NOOP);}	// Oops! nothing's running
 
-//	uint8_t mr_flag = true;		// used to tell replan to account for mr buffer Vx
 	float mr_available_length;	// available length left in mr buffer for deceleration
 	float braking_velocity;		// velocity left to shed to brake to zero
 	float braking_length;		// distance required to brake to zero from braking_velocity
