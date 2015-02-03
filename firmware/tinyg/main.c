@@ -141,6 +141,7 @@ static void _application_init(void)
 	PMIC_EnableLowLevel();
 	sei();							// enable global interrupts
 	rpt_print_system_ready_message();// (LAST) announce system is ready
+	printf("seg, len, Vi, Vt, Vx, Tnai, Tmov, Tmin, Treal, exit\n");	// ++++ diagnostic
 }
 
 /*

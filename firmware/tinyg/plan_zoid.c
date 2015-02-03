@@ -156,19 +156,16 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 	// The reduced equation omits the factor of 2 as it's compensated later
 	// Note: In some cases the naiive move time is inf(inite) or NAN. This is OK
 
-	float naiive_move_time = bf->gm.move_time;
-//	float naiive_move_time = bf->length / (bf->entry_velocity + max(bf->cruise_velocity, bf->exit_velocity));
-	printf("%lu: %2.3f, %4.0f, %4.0f, %4.0f %0.7f\n", bf->gm.linenum, bf->length, bf->entry_velocity, bf->cruise_velocity, bf->exit_velocity, naiive_move_time);
-//	printf("%0.7f\n", naiive_move_time);
+//	float naiive_move_time = bf->gm.move_time;
+	float naiive_move_time = bf->length / (bf->entry_velocity + max(bf->cruise_velocity, bf->exit_velocity));
+	printf("%lu, %2.3f, %4.0f, %4.0f, %4.0f, %0.8f, %0.8f, %0.8f, ", 
+		bf->gm.linenum, bf->length, bf->entry_velocity, bf->cruise_velocity, bf->exit_velocity, 
+		naiive_move_time,  bf->gm.move_time,  bf->gm.min_time);
 
 	// F case: Block is too short - run time < minimum segment time
 	// Force block into a single segment body with limited velocities
 	// Accept the entry velocity, limit the cruise, and go for the best exit velocity
 	// you can get given the delta_vmax (maximum velocity slew) supportable.
-
-	// <no test here - falls to B" case>
-
-	// B" case: Block is short, but fits into a single body segment
 
 	// If bf->real_move_time <= MIN_SEGMENT_TIME_PLUS_MARGIN, don't check MIN_SEGMENT_TIME_PLUS_MARGIN
 	if (naiive_move_time < (MIN_SEGMENT_TIME_PLUS_MARGIN / 2)) { // compensating for reduced equation
@@ -187,10 +184,14 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 		// LOCK IT
 //		bf->replannable = false;
 
-//		bf->real_move_time = bf->length/bf->cruise_velocity;
+		bf->real_move_time = bf->length/bf->cruise_velocity;
+		printf("%0.8f, F\n", bf->real_move_time);
+
 		// We are violating the jerk value but since it's a single segment move we don't use it.
 		return;
 	}
+
+	// B" case: Block is short, but fits into a single body segment
 
 // Replace this with NOM_SEGMENT TIME for now
 //    if (naiive_move_time <= (bf->real_move_time / 2)) { // compensating for reduced equation
@@ -219,6 +220,9 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 		// LOCK IT
 //		bf->replannable = false;
 
+		bf->real_move_time = bf->length/bf->cruise_velocity;	// please confirm this is correct real move time
+		printf("%0.8f, B\"\n", bf->real_move_time);
+
 		// We are violating the jerk value but since it's a single segment move we don't use it.
 		return;
 	}
@@ -236,7 +240,10 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 	if (((bf->cruise_velocity - bf->entry_velocity) < TRAPEZOID_VELOCITY_TOLERANCE) &&
 		((bf->cruise_velocity - bf->exit_velocity) < TRAPEZOID_VELOCITY_TOLERANCE)) {
 		bf->body_length = bf->length;
-//		bf->real_move_time = bf->length/bf->cruise_velocity;
+
+		bf->real_move_time = bf->length/bf->cruise_velocity;
+		printf("%0.8f, B\n", bf->real_move_time);
+
 		return;
 	}
 
@@ -298,10 +305,13 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 //				bf->entry_velocity = bf->cruise_velocity;
 				bf->exit_velocity = bf->cruise_velocity;
 
-//				bf->real_move_time = bf->length/bf->cruise_velocity;
+				bf->real_move_time = bf->length/bf->cruise_velocity;
+				printf("%0.8f, HT(1)\n", bf->real_move_time);
+
 			} else {
 				// T = (2L_0) / (v_1 + v_0) + L_1 / v_1 + (2L_2) / (v_1 + v_2)
-//				bf->real_move_time = ((bf->head_length*2)/(bf->entry_velocity + bf->cruise_velocity)) + (bf->body_length/bf->cruise_velocity) + ((bf->tail_length*2)/(bf->exit_velocity + bf->cruise_velocity));
+				bf->real_move_time = ((bf->head_length*2)/(bf->entry_velocity + bf->cruise_velocity)) + (bf->body_length/bf->cruise_velocity) + ((bf->tail_length*2)/(bf->exit_velocity + bf->cruise_velocity));
+				printf("%0.8f, HT(2)\n", bf->real_move_time);
 			}
 			return;
 		}
@@ -320,16 +330,19 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 		if (bf->head_length < MIN_HEAD_LENGTH) {
 			bf->tail_length = bf->length;			// adjust the move to be all tail...
 			bf->head_length = 0;
-//			bf->real_move_time = ((bf->tail_length*2)/(bf->exit_velocity + bf->cruise_velocity));
+			bf->real_move_time = ((bf->tail_length*2)/(bf->exit_velocity + bf->cruise_velocity));
+			printf("%0.8f, HT asym(2)\n", bf->real_move_time);
 			return;
 		}
 		else if (bf->tail_length < MIN_TAIL_LENGTH) {
 			bf->head_length = bf->length;			//...or all head
 			bf->tail_length = 0;
-//			bf->real_move_time = ((bf->head_length*2)/(bf->entry_velocity + bf->cruise_velocity));
+			bf->real_move_time = ((bf->head_length*2)/(bf->entry_velocity + bf->cruise_velocity));
+			printf("%0.8f, HT asym(2)\n", bf->real_move_time);
 			return;
 		}
-//		bf->real_move_time = ((bf->head_length*2)/(bf->entry_velocity + bf->cruise_velocity)) + (bf->body_length/bf->cruise_velocity) + ((bf->tail_length*2)/(bf->exit_velocity + bf->cruise_velocity));
+		bf->real_move_time = ((bf->head_length*2)/(bf->entry_velocity + bf->cruise_velocity)) + (bf->body_length/bf->cruise_velocity) + ((bf->tail_length*2)/(bf->exit_velocity + bf->cruise_velocity));
+		printf("%0.8f, HT asym(3)\n", bf->real_move_time);
 		return;
 	}
 
@@ -351,7 +364,8 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 			bf->tail_length += bf->body_length;
 		}
 		bf->body_length = 0;
-//		bf->real_move_time = ((bf->head_length*2)/(bf->entry_velocity + bf->cruise_velocity)) + ((bf->tail_length*2)/(bf->exit_velocity + bf->cruise_velocity));
+		bf->real_move_time = ((bf->head_length*2)/(bf->entry_velocity + bf->cruise_velocity)) + ((bf->tail_length*2)/(bf->exit_velocity + bf->cruise_velocity));
+		printf("%0.8f, ReqFit(1)\n", bf->real_move_time);
 
 //		if (fp_ZERO(bf->cruise_velocity)) {
 //			while (1);
@@ -363,7 +377,8 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 		} else if ((fp_ZERO(bf->head_length)) && (fp_ZERO(bf->tail_length))) {
 		bf->cruise_velocity = min(bf->entry_vmax, bf->cruise_vmax);
 
-//		bf->real_move_time = (bf->body_length/bf->cruise_velocity);
+		bf->real_move_time = (bf->body_length/bf->cruise_velocity);
+		printf("%0.8f, ReqFit(2)\n", bf->real_move_time);
 
 //		if (fp_ZERO(bf->cruise_velocity)) {
 //			while (1);
@@ -375,7 +390,8 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 //		while (1);
 //	}
 
-//	bf->real_move_time = ((bf->head_length*2)/(bf->entry_velocity + bf->cruise_velocity)) + (bf->body_length/bf->cruise_velocity) + ((bf->tail_length*2)/(bf->exit_velocity + bf->cruise_velocity));
+	bf->real_move_time = ((bf->head_length*2)/(bf->entry_velocity + bf->cruise_velocity)) + (bf->body_length/bf->cruise_velocity) + ((bf->tail_length*2)/(bf->exit_velocity + bf->cruise_velocity));
+	printf("%0.8f, ReqFit(3)\n", bf->real_move_time);
 }
 
 #else	// __NEW_ZOID

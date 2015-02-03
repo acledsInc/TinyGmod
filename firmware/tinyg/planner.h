@@ -183,6 +183,7 @@ typedef struct mpBuffer {			// See Planning Velocity Notes for variable usage
 	float cbrt_jerk;				// cube root of Jm used for planning (computed and cached)
 
 	// diagnostics
+	float real_move_time;			// +++
 	uint8_t jerk_axis;				// +++ diagnostic: rate limiting axis used to compute jerk for the move
 //	float naiive_move_time;			// +++diagnostic
 

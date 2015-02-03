@@ -207,7 +207,7 @@ stat_t mp_aline(GCodeState_t *gm_in)
  *
  *	Sets the following variables in the gcode_state struct
  *	  - move_time is set to optimal time
- *	  - minimum_time is set to minimum time
+ *	  - min_time is set to minimum time
  */
 /* --- NIST RS274NGC_v3 Guidance ---
  *
@@ -252,7 +252,7 @@ static void _calc_move_times(GCodeState_t *gms, const float axis_length[], const
 	float abc_time=0;				// coordinated move rotary part at requested feed rate
 	float max_time=0;				// time required for the rate-limiting axis
 	float tmp_time=0;				// used in computation
-	gms->minimum_time = 8675309;	// arbitrarily large number
+	gms->min_time = 8675309;		// arbitrarily large number
 
 	// compute times for feed motion
 	if (gms->motion_mode != MOTION_MODE_STRAIGHT_TRAVERSE) {
@@ -278,7 +278,7 @@ static void _calc_move_times(GCodeState_t *gms, const float axis_length[], const
 		max_time = max(max_time, tmp_time);
 
 		if (tmp_time > 0) { 	// collect minimum time if this axis is not zero
-			gms->minimum_time = min(gms->minimum_time, tmp_time);
+			gms->min_time = min(gms->min_time, tmp_time);
 		}
 	}
 	gms->move_time = max4(inv_time, max_time, xyz_time, abc_time);
