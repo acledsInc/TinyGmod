@@ -119,6 +119,8 @@ stat_t mp_aline(GCodeState_t *gm_in)
 		return (STAT_OK);
 	}
 
+	_calc_move_times(gm_in, axis_length, axis_square);					// set move time and minimum time in the state
+/*
 	// If _calc_move_times() says the move will take less than the minimum move time
 	// get a more accurate time estimate based on starting velocity and acceleration.
 	// The time of the move is determined by its initial velocity (Vi) and how much
@@ -128,8 +130,6 @@ stat_t mp_aline(GCodeState_t *gm_in)
 	//	(2) Previous block is optimally planned. Vi = previous block's exit_velocity
 	//	(3) Previous block is not optimally planned. Vi <= previous block's entry_velocity + delta_velocity
 
-	_calc_move_times(gm_in, axis_length, axis_square);					// set move time and minimum time in the state
-/*
 	if (gm_in->move_time < MIN_BLOCK_TIME) {
 		float delta_velocity = pow(length, 0.66666666) * mm.cbrt_jerk;	// max velocity change for this move
 		float entry_velocity = 0;										// pre-set as if no previous block
@@ -352,11 +352,17 @@ static void _calc_move_times(GCodeState_t *gms, const float axis_length[], const
 /*
 This may be simpler than we thought. We should be able to set the jerk scaling to the lowest axis with a non-zero unit vector. You go through the axes one by one and compute the scaled jerk, then pick the highest jerk that does not violate any of the axes in the move.
 */
-//#define __OLD_JERK_
+//#define __FIXED_JERK
+//#define __OLD_JERK
 #define __REVISED_JERK
 
 static void _calc_jerk(mpBuf_t *bf)
 {
+
+#ifdef __FIXED_JERK
+	bf->jerk = (JERK_MULTIPLIER * cm.a[AXIS_Z].jerk_max) / fabs(bf->unit[AXIS_Z]);
+//	bf->jerk = cm.a[AXIS_Z].jerk_max;
+#endif
 
 #ifdef __OLD_JERK
 	float C;				// contribution term. C = T * a
@@ -366,7 +372,7 @@ static void _calc_jerk(mpBuf_t *bf)
 		if (fabs(bf->unit[axis]) > 0) {								// if this axis is participating in the move
 			C = sqrt(cm.a[axis].recip_jerk) * fabs(bf->unit[axis]);	// C = sqrt(1/J[n]) * (D[n]/L)
 			if (C > maxC) {
-				bf->jerk_axis = axis;						// also needed for junction vmax calculation
+				bf->jerk_axis = axis;
 				maxC = C;
 			}
 		}
@@ -395,6 +401,7 @@ static void _calc_jerk(mpBuf_t *bf)
 //	mm.z_jerk_scaled = bf->jerk * fabs(bf->unit[AXIS_Z]);
 	// +++ to here
 
+//	bf->jerk = cm.a[bf->jerk_axis].jerk_max;
 	bf->jerk *= JERK_MULTIPLIER;							// goose it!
 #endif	// __REVISED_JERK
 
@@ -406,7 +413,7 @@ static void _calc_jerk(mpBuf_t *bf)
 	}
 	bf->recip_jerk = mm.recip_jerk;
 	bf->cbrt_jerk = mm.cbrt_jerk;
-	
+
 /*	// use this form if you don't want the caching
 	bf->recip_jerk = 1/bf->jerk;
 	bf->cbrt_jerk = cbrt(bf->jerk);
@@ -596,7 +603,7 @@ static void _reset_replannable_list()
  *	- code this routine with ifdefs for the number of axes (compile time optimization)
  *	- detect cases where unit vectors are zero, and compute accordingly (run time optimization)
  *	- find a short cutout for +/- 1 cosine cases, and tune the 0.9xxxx term for tolerance
- *	- make the system smart enough to detect which axes are in the code 
+ *	- make the system smart enough to detect which axes are in the code
  */
 
 static float _get_junction_vmax(const float a_unit[], const float b_unit[])

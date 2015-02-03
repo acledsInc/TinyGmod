@@ -149,8 +149,8 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 		bf->exit_velocity = bf->cruise_velocity;
 	}
 
-	// Naiive move time notes: With v_0 and v_1 being the sides of a quadrilateral, 
-	// the area is the move length, and the width is the move time. This formula is 
+	// Naiive move time notes: With v_0 and v_1 being the sides of a quadrilateral,
+	// the area is the move length, and the width is the move time. This formula is
 	// to get the move time (width) from the sides and the area (move length).
 	// The actual formula is T=(2L)/(v_0+v_1) == T/2=L/(v_0+v_1)
 	// (Note: In some cases the naiive move time is inf(inite) or NAN. This is OK)
@@ -180,9 +180,9 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 		bf->body_length = bf->length;
 
 		// LOCK IT
-		//        bf->replannable = false;
+//		bf->replannable = false;
 
-		//        bf->real_move_time = bf->length/bf->cruise_velocity;
+//		bf->real_move_time = bf->length/bf->cruise_velocity;
 		// We are violating the jerk value but since it's a single segment move we don't use it.
 		return;
 	}
@@ -212,7 +212,7 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 		bf->body_length = bf->length;
 
 		// LOCK IT
-		//        bf->replannable = false;
+//		bf->replannable = false;
 
 		// We are violating the jerk value but since it's a single segment move we don't use it.
 		return;
@@ -231,21 +231,19 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 	if (((bf->cruise_velocity - bf->entry_velocity) < TRAPEZOID_VELOCITY_TOLERANCE) &&
 		((bf->cruise_velocity - bf->exit_velocity) < TRAPEZOID_VELOCITY_TOLERANCE)) {
 		bf->body_length = bf->length;
-
-		//        bf->real_move_time = bf->length/bf->cruise_velocity;
-		//		printf("4");
+//		bf->real_move_time = bf->length/bf->cruise_velocity;
 		return;
 	}
 
 	// Set head and tail lengths for evaluating the next cases
 	//
-	// Optimization:		Find the length that will be the greatest, and test it first. 
+	// Optimization:		Find the length that will be the greatest, and test it first.
 	//						If it's too short so is the other.
 	//
-	// Anti-optimization:	We have code for each test twice, even though at most only 
-	//						two will ever be used. In this case we "code them all and 
+	// Anti-optimization:	We have code for each test twice, even though at most only
+	//						two will ever be used. In this case we "code them all and
 	//						the optimizer sort them out."
-	
+
 	if ((bf->cruise_velocity - bf->entry_velocity) > (bf->cruise_velocity - bf->exit_velocity)) {
 		bf->head_length = mp_get_target_length(bf->entry_velocity, bf->cruise_velocity, bf);
 		if (bf->head_length < MIN_HEAD_LENGTH) {
@@ -280,9 +278,9 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 //			bf->cruise_velocity = min(bf->cruise_vmax, mp_get_target_velocity(bf->entry_velocity, bf->head_length, bf));
 			bf->cruise_velocity = mp_get_target_velocity(bf->entry_velocity, bf->head_length, bf);
 
-			if (fp_ZERO(bf->cruise_velocity)) {
-				while (1);
-			}
+//			if (fp_ZERO(bf->cruise_velocity)) {
+//				while (1);
+//			}
 
 			if (bf->head_length < MIN_HEAD_LENGTH) {
 				// Convert this to a body-only move
@@ -308,30 +306,25 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 		// set velocity and clean up any parts that are too short
 		bf->cruise_velocity = mp_get_meet_velocity(bf->entry_velocity, bf->exit_velocity, bf->length, bf);
 
-		if (fp_ZERO(bf->cruise_velocity)) {
-			while (1);
-		}
+//		if (fp_ZERO(bf->cruise_velocity)) {
+//			while (1);
+//		}
 
 		bf->head_length = mp_get_target_length(bf->entry_velocity, bf->cruise_velocity, bf);
 		bf->tail_length = bf->length - bf->head_length;
 		if (bf->head_length < MIN_HEAD_LENGTH) {
 			bf->tail_length = bf->length;			// adjust the move to be all tail...
 			bf->head_length = 0;
-
 //			bf->real_move_time = ((bf->tail_length*2)/(bf->exit_velocity + bf->cruise_velocity));
-
 			return;
 		}
 		else if (bf->tail_length < MIN_TAIL_LENGTH) {
 			bf->head_length = bf->length;			//...or all head
 			bf->tail_length = 0;
-
 //			bf->real_move_time = ((bf->head_length*2)/(bf->entry_velocity + bf->cruise_velocity));
-
 			return;
 		}
-
-//			bf->real_move_time = ((bf->head_length*2)/(bf->entry_velocity + bf->cruise_velocity)) + (bf->body_length/bf->cruise_velocity) + ((bf->tail_length*2)/(bf->exit_velocity + bf->cruise_velocity));
+//		bf->real_move_time = ((bf->head_length*2)/(bf->entry_velocity + bf->cruise_velocity)) + (bf->body_length/bf->cruise_velocity) + ((bf->tail_length*2)/(bf->exit_velocity + bf->cruise_velocity));
 		return;
 	}
 
@@ -353,13 +346,11 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 			bf->tail_length += bf->body_length;
 		}
 		bf->body_length = 0;
-
 //		bf->real_move_time = ((bf->head_length*2)/(bf->entry_velocity + bf->cruise_velocity)) + ((bf->tail_length*2)/(bf->exit_velocity + bf->cruise_velocity));
 
-		if (fp_ZERO(bf->cruise_velocity)) {
-			while (1);
-		}
-
+//		if (fp_ZERO(bf->cruise_velocity)) {
+//			while (1);
+//		}
 		return;
 
 		// If the body is a standalone make the cruise velocity match the entry velocity
@@ -367,20 +358,19 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 		} else if ((fp_ZERO(bf->head_length)) && (fp_ZERO(bf->tail_length))) {
 		bf->cruise_velocity = min(bf->entry_vmax, bf->cruise_vmax);
 
-		//        bf->real_move_time = (bf->body_length/bf->cruise_velocity);
+//		bf->real_move_time = (bf->body_length/bf->cruise_velocity);
 
-		if (fp_ZERO(bf->cruise_velocity)) {
-			while (1);
-		}
-
+//		if (fp_ZERO(bf->cruise_velocity)) {
+//			while (1);
+//		}
 		return;
 	}
 
-	if (fp_ZERO(bf->cruise_velocity)) {
-		while (1);
-	}
+//	if (fp_ZERO(bf->cruise_velocity)) {
+//		while (1);
+//	}
 
-	//    bf->real_move_time = ((bf->head_length*2)/(bf->entry_velocity + bf->cruise_velocity)) + (bf->body_length/bf->cruise_velocity) + ((bf->tail_length*2)/(bf->exit_velocity + bf->cruise_velocity));
+//	bf->real_move_time = ((bf->head_length*2)/(bf->entry_velocity + bf->cruise_velocity)) + (bf->body_length/bf->cruise_velocity) + ((bf->tail_length*2)/(bf->exit_velocity + bf->cruise_velocity));
 }
 
 #else	// __NEW_ZOID
@@ -745,9 +735,8 @@ static const float f1_15th_x_2_3_rt_5 = 0.194934515880858;	// 1/15*5^(2/3) = 0.1
 	//        + 1/15*5^(2/3)*(27*sqrt(3)*L^2*j + 40*v_0^3 + 3*sqrt(3)*sqrt(80*sqrt(3)*L^2*j*v_0^3 + 81*L^4*j^2))^(1/3)
 	//        - 1/3*v_0
 
-	// chunk_1 = pow( (27 * sqrt(3)*L^2*j     + 40 * v_0^3  + 3*sqrt(3) * sqrt(80 * v_0^3  * sqrt(3)*L^2*j     + 81 * L^4      * j^2 ) ), third)
-	//         = pow( (27 * L_sq_x_j_x_sqrt_3 + 40 * v_0_cu + f3_sqrt_3 * sqrt(80 * v_0_cu * L_sq_x_j_x_sqrt_3 + 81 * L_fourth * j_sq) ), third)
-
+	// chunk_1 = pow( (27 * sqrt(3)*L^2*j     + 40 * v_0^3  + 3*sqrt(3) * sqrt(80 * v_0^3  * sqrt(3)*L^2*j         + 81 * L^4      * j^2 ) ), third)
+	//         = pow( (27 * L_sq_x_j_x_sqrt_3 + 40 * v_0_cu + f3_sqrt_3 * sqrt(80 * v_0_cu * L_sq_x_j_x_sqrt_3     + 81 * L_fourth * j_sq) ), third)
 	//         = pow( (27 * L_sq_x_j_x_sqrt_3 + 40 * v_0_cu + f3_sqrt_3 * sqrt(2 * 40 * v_0_cu * L_sq_x_j_x_sqrt_3 + 81 * L_fourth * j_sq) ), third)
 	//         = pow( (27 * L_sq_x_j_x_sqrt_3 + v_0_cu_x_40 + f3_sqrt_3 * sqrt(2 * v_0_cu_x_40 * L_sq_x_j_x_sqrt_3 + 81 * L_fourth * j_sq) ), third)
 
@@ -767,27 +756,25 @@ static const float f1_15th_x_2_3_rt_5 = 0.194934515880858;	// 1/15*5^(2/3) = 0.1
 
 /*
  * mp_get_meet_velocity()
+ *
+ * L_d(v_0, v_1, j) = (sqrt(5) abs(v_0 - v_1) (v_0 - 3v_1)) / (2sqrt(2) 3^(1 / 4) sqrt(j abs(v_0 - v_1)) (v_0 - v_1))
+ *                     sqrt(5) / (2 sqrt(2) nroot(3,4)) ( v_0 - 3 v_1) / ( sqrt(j abs(v_0 - v_1)))
+ *                     sqrt(5) / (2 sqrt(2) nroot(3,4)) = 0.60070285354
+ *
+ * Average cost: 0.18ms -- 180us on SAM*X3C/E @ 84 MHz
  */
-const float mv_constant = 0.60070285354;				// sqrt(5) / (2 sqrt(2) nroot(3,4)) = 0.60070285354
-
-// Just calling this tl_constant. It's full name is:
+														// Just calling this tl_constant. It's full name is:
 static const float tl_constant = 1.201405707067378;		// sqrt(5)/( sqrt(2)pow(3,4) )
+static const float mv_constant = 0.60070285354;			// sqrt(5) / (2 sqrt(2) nroot(3,4)) = 0.60070285354
 
-float mp_get_meet_velocity(const float v_0, const float v_2, const float L, const mpBuf_t *bf) {
-	//L_d(v_0, v_1, j) = (sqrt(5) abs(v_0 - v_1) (v_0 - 3v_1)) / (2sqrt(2) 3^(1 / 4) sqrt(j abs(v_0 - v_1)) (v_0 - v_1))
-	//                    sqrt(5) / (2 sqrt(2) nroot(3,4)) ( v_0 - 3 v_1) / ( sqrt(j abs(v_0 - v_1)))
-	//                    sqrt(5) / (2 sqrt(2) nroot(3,4)) = 0.60070285354
-
-	// Average cost: 0.18ms -- 180us
-
+float mp_get_meet_velocity(const float v_0, const float v_2, const float L, const mpBuf_t *bf)
+{
 	const float j = bf->jerk;
 	const float recip_j = bf->recip_jerk;
 
-	float l_c_head, l_c_tail, l_c; // calculated L
-	float l_d_head, l_d_tail, l_d; // calculated derivative of L with respect to v_1
-
-	// chunks of precomputed values
-	float sqrt_j_delta_v_0, sqrt_j_delta_v_1;
+	float l_c_head, l_c_tail, l_c;					// calculated L
+	float l_d_head, l_d_tail, l_d;					// calculated derivative of L with respect to v_1
+	float sqrt_j_delta_v_0, sqrt_j_delta_v_1;		// chunks of precomputed values
 
 	// v_1 is our estimated return value.
 	// We estimate with the speed obtained by L/2 traveled from the highest speed of v_0 or v_2.
@@ -795,7 +782,7 @@ float mp_get_meet_velocity(const float v_0, const float v_2, const float L, cons
 	float last_v_1 = 0;
 
 	// Per iteration: 2 sqrt, 2 abs, 6 -, 4 +, 12 *, 3 /
-	int i = 0; // limit the iterations
+	uint8_t i = 0; // limit the iterations
 	while (i++ < TRAPEZOID_ITERATION_MAX && our_abs(last_v_1 - v_1) < 2) {
 		last_v_1 = v_1;
 
@@ -806,7 +793,7 @@ float mp_get_meet_velocity(const float v_0, const float v_2, const float L, cons
 		l_c_head = tl_constant * sqrt_j_delta_v_0 * (v_0+v_1) * recip_j;
 		l_c_tail = tl_constant * sqrt_j_delta_v_1 * (v_2+v_1) * recip_j;
 
-		// l_c is our total-length calculation wih the curent v_1 estimate, minus the expected length.
+		// l_c is our total-length calculation with the current v_1 estimate, minus the expected length.
 		// This makes l_c == 0 when v_1 is the correct value.
 		l_c = (l_c_head + l_c_tail) - L;
 
@@ -822,9 +809,9 @@ float mp_get_meet_velocity(const float v_0, const float v_2, const float L, cons
 
 		v_1 = v_1 - (l_c/l_d);
 	}
-
 	return v_1;
 }
+
 /*
 #ifdef __cplusplus
 }
