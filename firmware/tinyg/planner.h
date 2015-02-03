@@ -155,8 +155,6 @@ typedef struct mpBuffer {			// See Planning Velocity Notes for variable usage
 	stat_t (*bf_func)(struct mpBuffer *bf); // callback to buffer exec function
 	cm_exec_t cm_func;				// callback to canonical machine execution function
 
-	float naiive_move_time;
-
 	uint8_t buffer_state;			// used to manage queuing/dequeuing
 	uint8_t move_type;				// used to dispatch to run routine
 	uint8_t move_code;				// byte that can be used by used exec functions
@@ -165,7 +163,7 @@ typedef struct mpBuffer {			// See Planning Velocity Notes for variable usage
 
 	float unit[AXES];				// unit vector for axis scaling & planning
 
-	float length;					// total length of line or helix in mm
+	float length;					// total line length in mm
 	float head_length;
 	float body_length;
 	float tail_length;
@@ -180,10 +178,13 @@ typedef struct mpBuffer {			// See Planning Velocity Notes for variable usage
 	float delta_vmax;				// max velocity difference for this move
 	float braking_velocity;			// current value for braking velocity
 
-	uint8_t jerk_axis;				// +++ diagnostic: rate limiting axis used to compute jerk for the move
 	float jerk;						// maximum linear jerk term for this move
 	float recip_jerk;				// 1/Jm used for planning (computed and cached)
 	float cbrt_jerk;				// cube root of Jm used for planning (computed and cached)
+
+	// diagnostics
+	uint8_t jerk_axis;				// +++ diagnostic: rate limiting axis used to compute jerk for the move
+//	float naiive_move_time;			// +++diagnostic
 
 	GCodeState_t gm;				// Gode model state - passed from model, used by planner and runtime
 

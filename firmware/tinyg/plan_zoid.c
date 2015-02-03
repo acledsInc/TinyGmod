@@ -153,9 +153,13 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 	// the area is the move length, and the width is the move time. This formula is
 	// to get the move time (width) from the sides and the area (move length).
 	// The actual formula is T=(2L)/(v_0+v_1) == T/2=L/(v_0+v_1)
-	// (Note: In some cases the naiive move time is inf(inite) or NAN. This is OK)
+	// The reduced equation omits the factor of 2 as it's compensated later
+	// Note: In some cases the naiive move time is inf(inite) or NAN. This is OK
 
-	float naiive_move_time = bf->length / (bf->entry_velocity + max(bf->cruise_velocity,bf->exit_velocity));		// reduced equation
+	float naiive_move_time = bf->gm.move_time;
+//	float naiive_move_time = bf->length / (bf->entry_velocity + max(bf->cruise_velocity, bf->exit_velocity));
+	printf("%lu: %2.3f, %4.0f, %4.0f, %4.0f %0.7f\n", bf->gm.linenum, bf->length, bf->entry_velocity, bf->cruise_velocity, bf->exit_velocity, naiive_move_time);
+//	printf("%0.7f\n", naiive_move_time);
 
 	// F case: Block is too short - run time < minimum segment time
 	// Force block into a single segment body with limited velocities
@@ -172,7 +176,8 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 		bf->cruise_velocity = bf->length / MIN_SEGMENT_TIME_PLUS_MARGIN;
 		bf->cruise_velocity = min3(bf->cruise_velocity, bf->cruise_vmax, (bf->entry_velocity + bf->delta_vmax));
 
-		// trap zero cruise velocity: if (fp_ZERO(bf->cruise_velocity)) { while (1);}
+		// if (fp_ZERO(bf->cruise_velocity))			// trap zero cruise velocity for debugging
+		//		{ while (1);}
 
 		// Why assume we want to decelerate or accelerate?
 		// bf->exit_velocity = max(0.0, min(bf->cruise_velocity, (bf->entry_velocity - bf->delta_vmax)));

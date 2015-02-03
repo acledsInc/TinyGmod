@@ -154,6 +154,9 @@ stat_t cm_arc_callback()
 	arc.gm.target[arc.plane_axis_0] = arc.center_0 + sin(arc.theta) * arc.radius;
 	arc.gm.target[arc.plane_axis_1] = arc.center_1 + cos(arc.theta) * arc.radius;
 	arc.gm.target[arc.linear_axis] += arc.segment_linear_travel;
+
+	arc.gm.linenum = arc.segment_count;				//++++ diagnostic
+
 	mp_aline(&arc.gm);								// run the line
 	copy_vector(arc.position, arc.gm.target);		// update arc current position
 
@@ -212,7 +215,7 @@ static stat_t _compute_arc()
 
 	// Compute angular travel and invert if Gcode wants a counterclockwise arc
 	arc.angular_travel = arc.theta_end - arc.theta;
-	
+
 	// If no endpoint was provided interpret it as a full circle.
 	if (arc.full_circle) {
 		if (cm.gm.motion_mode == MOTION_MODE_CCW_ARC) {
@@ -235,7 +238,7 @@ static stat_t _compute_arc()
 	arc.length = hypot(arc.planar_travel, fabs(arc.linear_travel));
 
 	// arc is too short to process
-	if (arc.length < cm.arc_segment_len) return (STAT_MINIMUM_LENGTH_MOVE); 
+	if (arc.length < cm.arc_segment_len) return (STAT_MINIMUM_LENGTH_MOVE);
 
 	// Find the minimum number of segments that meets these constraints...
 	_estimate_arc_time();	// get an estimate of execution time to inform segment calculation
@@ -387,9 +390,9 @@ static stat_t _compute_arc_offsets_from_radius()
  *
  *	Returns a naiive estimate of arc execution time to inform segment calculation.
  *	The arc time is computed not to exceed the time taken in the slowest dimension
- *	in the arc plane or in linear travel. Maximum feed rates are compared in each 
- *	dimension, but the comparison assumes that the arc will have at least one segment 
- *	where the unit vector is 1 in that dimension. This is not true for any arbitrary arc, 
+ *	in the arc plane or in linear travel. Maximum feed rates are compared in each
+ *	dimension, but the comparison assumes that the arc will have at least one segment
+ *	where the unit vector is 1 in that dimension. This is not true for any arbitrary arc,
  *	with the result that the time returned may be less than optimal.
  */
 static void _estimate_arc_time ()
@@ -492,7 +495,7 @@ static stat_t _test_arc_soft_limit_plane_axis(float center, uint8_t plane_axis)
 {
 	if (center <= arc.position[plane_axis]) {
 		if (arc.angular_travel < M_PI) {							// case (1)
-			return (STAT_OK);		
+			return (STAT_OK);
 		}
 		if ((center - arc.radius) < cm.a[plane_axis].travel_min) {	// case (2)
 			return (STAT_SOFT_LIMIT_EXCEEDED);
@@ -508,10 +511,10 @@ static stat_t _test_arc_soft_limits()
 {
 	if (cm.soft_limit_enable == true) {
 
-		// Test if target falls outside boundaries. This is a 3 dimensional test 
+		// Test if target falls outside boundaries. This is a 3 dimensional test
 		// so it also checks the linear axis of the arc (helix axis)
 		ritorno(cm_test_soft_limits(arc.gm.target));
-	
+
 		// test arc extents
 		ritorno(_test_arc_soft_limit_plane_axis(arc.center_0, arc.plane_axis_0));
 		ritorno(_test_arc_soft_limit_plane_axis(arc.center_1, arc.plane_axis_1));
