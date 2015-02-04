@@ -61,6 +61,7 @@
 //#define __KAHAN							// Use Kahan summation in aline exec functions
 //#define __NEW_JUNCTION					// enable reduction of junction velocity math
 #define __NEW_ZOID						// enable reduction of junction velocity math
+//#define __LOG_ZOID
 
 #define __TEXT_MODE							// enables text mode	(~10Kb)
 #define __HELP_SCREENS						// enables help screens (~3.5Kb)

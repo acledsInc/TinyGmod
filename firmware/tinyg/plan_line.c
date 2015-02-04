@@ -173,6 +173,13 @@ stat_t mp_aline(GCodeState_t *gm_in)
 
 	// Note: these next lines must remain in exact order. Position must update before committing the buffer.
 	mp_plan_block_list(bf, false);				// replan block list
+
+	printf("bf, %lu, %0.3f, %0.3f, %0.3f, %0.3f, %0.0f, %0.0f, %0.0f, %0.8f, %0.5f, %6.0f, %d\n", 
+		bf->gm.linenum, bf->length,
+		bf->head_length, bf->body_length, bf->tail_length, 
+		bf->entry_velocity, bf->cruise_velocity, bf->exit_velocity,
+		bf->gm.move_time, bf->unit[2], (double)bf->jerk, bf->jerk_axis);
+
 	copy_vector(mm.position, bf->gm.target);	// set the planner position
 	mp_commit_write_buffer(MOVE_TYPE_ALINE); 	// commit current block (must follow the position update)
 	return (STAT_OK);

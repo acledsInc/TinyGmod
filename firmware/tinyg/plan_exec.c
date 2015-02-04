@@ -188,6 +188,13 @@ stat_t mp_exec_aline(mpBuf_t *bf)
 		copy_vector(mr.unit, bf->unit);
 		copy_vector(mr.target, bf->gm.target);			// save the final target of the move
 
+		printf("mr, %lu, %0.3f, %0.3f, %0.3f, %0.3f, %0.0f, %0.0f, %0.0f, %0.8f, %0.5f, %6.0f\n",
+			mr.gm.linenum, (mr.head_length + mr.body_length + mr.tail_length), 
+			mr.head_length, mr.body_length, mr.tail_length,
+			mr.entry_velocity, mr.cruise_velocity, mr.exit_velocity,
+			mr.gm.move_time, mr.unit[2], (double)mr.jerk);
+
+
 		// generate the waypoints for position correction at section ends
 		for (uint8_t axis=0; axis<AXES; axis++) {
 			mr.waypoint[SECTION_HEAD][axis] = mr.position[axis] + mr.unit[axis] * mr.head_length;
