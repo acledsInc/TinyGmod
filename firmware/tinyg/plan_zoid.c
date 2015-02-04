@@ -158,8 +158,8 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 
 //	float naiive_move_time = bf->gm.move_time;
 	float naiive_move_time = bf->length / (bf->entry_velocity + max(bf->cruise_velocity, bf->exit_velocity));
-	printf("%lu, %2.3f, %4.0f, %4.0f, %4.0f, %0.8f, %0.8f, %0.8f, ", 
-		bf->gm.linenum, bf->length, bf->entry_velocity, bf->cruise_velocity, bf->exit_velocity, 
+	printf("%lu, %2.3f, %4.0f, %4.0f, %4.0f, %0.8f, %0.8f, %0.8f, ",
+		bf->gm.linenum, bf->length, bf->entry_velocity, bf->cruise_velocity, bf->exit_velocity,
 		naiive_move_time,  bf->gm.move_time,  bf->gm.min_time);
 
 	// F case: Block is too short - run time < minimum segment time
@@ -221,7 +221,7 @@ void mp_calculate_trapezoid(mpBuf_t *bf)
 //		bf->replannable = false;
 
 		bf->real_move_time = bf->length/bf->cruise_velocity;	// please confirm this is correct real move time
-		printf("%0.8f, B\"\n", bf->real_move_time);
+		printf("%0.8f, B(dp)\n", bf->real_move_time);
 
 		// We are violating the jerk value but since it's a single segment move we don't use it.
 		return;
