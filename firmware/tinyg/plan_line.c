@@ -173,13 +173,13 @@ stat_t mp_aline(GCodeState_t *gm_in)
 
 	// Note: these next lines must remain in exact order. Position must update before committing the buffer.
 	mp_plan_block_list(bf, false);				// replan block list
-
-	printf("bf, %lu, %0.3f, %0.3f, %0.3f, %0.3f, %0.0f, %0.0f, %0.0f, %0.8f, %0.5f, %6.0f, %d\n", 
+/*
+	printf("bf, %lu, %0.3f, %0.3f, %0.3f, %0.3f, %0.0f, %0.0f, %0.0f, %0.8f, %0.5f, %6.0f, %d\n",
 		bf->gm.linenum, bf->length,
-		bf->head_length, bf->body_length, bf->tail_length, 
+		bf->head_length, bf->body_length, bf->tail_length,
 		bf->entry_velocity, bf->cruise_velocity, bf->exit_velocity,
 		bf->gm.move_time, bf->unit[2], (double)bf->jerk, bf->jerk_axis);
-
+*/
 	copy_vector(mm.position, bf->gm.target);	// set the planner position
 	mp_commit_write_buffer(MOVE_TYPE_ALINE); 	// commit current block (must follow the position update)
 	return (STAT_OK);
@@ -360,15 +360,15 @@ static void _calc_move_times(GCodeState_t *gms, const float axis_length[], const
 This may be simpler than we thought. We should be able to set the jerk scaling to the lowest axis with a non-zero unit vector. You go through the axes one by one and compute the scaled jerk, then pick the highest jerk that does not violate any of the axes in the move.
 */
 //#define __FIXED_JERK
-//#define __OLD_JERK
-#define __REVISED_JERK
+#define __OLD_JERK
+//#define __REVISED_JERK
 
 static void _calc_jerk(mpBuf_t *bf)
 {
 
 #ifdef __FIXED_JERK
-	bf->jerk = (JERK_MULTIPLIER * cm.a[AXIS_Z].jerk_max) / fabs(bf->unit[AXIS_Z]);
-//	bf->jerk = cm.a[AXIS_Z].jerk_max;
+//	bf->jerk = (JERK_MULTIPLIER * cm.a[AXIS_Z].jerk_max) / fabs(bf->unit[AXIS_Z]);
+	bf->jerk = cm.a[AXIS_Z].jerk_max;
 #endif
 
 #ifdef __OLD_JERK

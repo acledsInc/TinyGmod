@@ -188,12 +188,19 @@ stat_t mp_exec_aline(mpBuf_t *bf)
 		copy_vector(mr.unit, bf->unit);
 		copy_vector(mr.target, bf->gm.target);			// save the final target of the move
 
-		printf("mr, %lu, %0.3f, %0.3f, %0.3f, %0.3f, %0.0f, %0.0f, %0.0f, %0.8f, %0.5f, %6.0f\n",
-			mr.gm.linenum, (mr.head_length + mr.body_length + mr.tail_length), 
+//		printf("typ, seg, len, head, body, tail, Vi, Vt, Vx, Tmov, U[z], jerk, jerk_axis\n"); // ++++ diagnostic
+
+		float Vz = (mr.unit[2] * mr.cruise_velocity);
+		float Az = (mr.unit[2] * ((mr.cruise_velocity - mr.cruise_velocity_previous)/mr.gm.move_time));
+
+		printf("mr, %lu, %0.3f, %0.3f, %0.3f, %0.3f, %0.0f, %0.0f, %0.0f, %0.8f, %0.5f, %6.0f, %0.0f, %0.0f, %0.0f\n",
+			mr.gm.linenum, (mr.head_length + mr.body_length + mr.tail_length),
 			mr.head_length, mr.body_length, mr.tail_length,
 			mr.entry_velocity, mr.cruise_velocity, mr.exit_velocity,
-			mr.gm.move_time, mr.unit[2], (double)mr.jerk);
-
+			mr.gm.move_time, mr.unit[2], (double)mr.jerk,
+			Vz,
+			Az
+			);
 
 		// generate the waypoints for position correction at section ends
 		for (uint8_t axis=0; axis<AXES; axis++) {
@@ -237,6 +244,7 @@ stat_t mp_exec_aline(mpBuf_t *bf)
 		mr.section_state = SECTION_OFF;
 		bf->nx->replannable = false;					// prevent overplanning (Note 2)
 		if (bf->move_state == MOVE_RUN) {
+			mr.cruise_velocity_previous = mr.cruise_velocity;	// ++++ diagnostic
 			if (mp_free_run_buffer()) cm_cycle_end();	// free buffer & end cycle if planner is empty
 		}
 	}

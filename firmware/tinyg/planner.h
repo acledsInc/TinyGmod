@@ -251,6 +251,9 @@ typedef struct mpMoveRuntimeSingleton {	// persistent runtime variables
 	float segment_time;				// actual time increment per aline segment
 	float jerk;						// max linear jerk
 
+	// +++ diagnostics
+	float cruise_velocity_previous;
+
 #ifdef __JERK_EXEC					// values used exclusively by computed jerk acceleration
 	float jerk_div2;				// cached value for efficiency
 	float midpoint_velocity;		// velocity at accel/decel midpoint
