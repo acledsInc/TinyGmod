@@ -98,8 +98,6 @@ uint8_t mp_get_runtime_busy()
 stat_t mp_aline(GCodeState_t *gm_in)
 {
 	mpBuf_t *bf; 						// current move pointer
-	float exact_stop = 0;				// preset this value OFF
-	float junction_velocity;
 
 	// compute some reusable terms
 	float axis_length[AXES];
@@ -120,32 +118,7 @@ stat_t mp_aline(GCodeState_t *gm_in)
 	}
 
 	_calc_move_times(gm_in, axis_length, axis_square);					// set move time and minimum time in the state
-/*
-	// If _calc_move_times() says the move will take less than the minimum move time
-	// get a more accurate time estimate based on starting velocity and acceleration.
-	// The time of the move is determined by its initial velocity (Vi) and how much
-	// acceleration will be occur. For this we need to look at the exit velocity of
-	// the previous block. There are 3 possible cases:
-	//	(1) There is no previous block. Vi = 0
-	//	(2) Previous block is optimally planned. Vi = previous block's exit_velocity
-	//	(3) Previous block is not optimally planned. Vi <= previous block's entry_velocity + delta_velocity
 
-	if (gm_in->move_time < MIN_BLOCK_TIME) {
-		float delta_velocity = pow(length, 0.66666666) * mm.cbrt_jerk;	// max velocity change for this move
-		float entry_velocity = 0;										// pre-set as if no previous block
-		if ((bf = mp_get_run_buffer()) != NULL) {
-			if (bf->replannable == true) {								// not optimally planned
-				entry_velocity = bf->entry_velocity + bf->delta_vmax;
-			} else {													// optimally planned
-				entry_velocity = bf->exit_velocity;
-			}
-		}
-		float move_time = (2 * length) / (2*entry_velocity + delta_velocity);// compute execution time for this move
-		if (move_time < MIN_BLOCK_TIME) {
-			return (STAT_MINIMUM_TIME_MOVE);
-		}
-	}
-*/
 	// get a cleared buffer and setup move variables
 	if ((bf = mp_get_write_buffer()) == NULL) {
 		return(cm_hard_alarm(STAT_BUFFER_FULL_FATAL));					// never supposed to fail
@@ -159,17 +132,35 @@ stat_t mp_aline(GCodeState_t *gm_in)
 
 	_calc_jerk(bf);														// calculate jerk value
 
-	// finish up the current block variables
+	// set up the block variables
+	bf->cruise_vmax = bf->length / bf->gm.move_time;					// target velocity requested
+	bf->delta_vmax = mp_get_target_velocity(0, bf->length, bf);
+	bf->braking_velocity = bf->delta_vmax;
+
+	if (cm_get_path_control(MODEL) == PATH_EXACT_STOP) {
+		bf->entry_vmax = 0;
+		bf->exit_vmax = 0;
+	//	bf->replannable = false;	// for reference. This is already set to zero by the clear.
+	} else {
+		float junction_velocity = _get_junction_vmax(bf->pv->unit, bf->unit);
+		bf->entry_vmax = min(bf->cruise_vmax, junction_velocity);
+		bf->exit_vmax = min(bf->cruise_vmax, (bf->entry_vmax + bf->delta_vmax));
+		bf->replannable = true;
+	}
+
+/*
+	float exact_stop = 0.0;												// preset this value
 	if (cm_get_path_control(MODEL) != PATH_EXACT_STOP) {				// exact stop cases already zeroed
 		bf->replannable = true;
 		exact_stop = 8675309;											// an arbitrarily large floating point number
 	}
 	bf->cruise_vmax = bf->length / bf->gm.move_time;					// target velocity requested
-	junction_velocity = _get_junction_vmax(bf->pv->unit, bf->unit);
+	float junction_velocity = _get_junction_vmax(bf->pv->unit, bf->unit);
 	bf->entry_vmax = min3(bf->cruise_vmax, junction_velocity, exact_stop);
 	bf->delta_vmax = mp_get_target_velocity(0, bf->length, bf);
 	bf->exit_vmax = min3(bf->cruise_vmax, (bf->entry_vmax + bf->delta_vmax), exact_stop);
 	bf->braking_velocity = bf->delta_vmax;
+*/
 
 	// Note: these next lines must remain in exact order. Position must update before committing the buffer.
 	mp_plan_block_list(bf, false);				// replan block list
@@ -187,6 +178,7 @@ stat_t mp_aline(GCodeState_t *gm_in)
 
 /***** ALINE HELPERS *****
  * _calc_move_times()
+ * _calc_accel()
  * _calc_jerk()
  * mp_plan_block_list()
  * _get_junction_vmax()
@@ -360,8 +352,8 @@ static void _calc_move_times(GCodeState_t *gms, const float axis_length[], const
 This may be simpler than we thought. We should be able to set the jerk scaling to the lowest axis with a non-zero unit vector. You go through the axes one by one and compute the scaled jerk, then pick the highest jerk that does not violate any of the axes in the move.
 */
 //#define __FIXED_JERK
-#define __OLD_JERK
-//#define __REVISED_JERK
+//#define __OLD_JERK
+#define __REVISED_JERK
 
 static void _calc_jerk(mpBuf_t *bf)
 {
@@ -395,6 +387,8 @@ static void _calc_jerk(mpBuf_t *bf)
 	for (uint8_t axis=0; axis<AXES; axis++) {
 		if (fabs(bf->unit[axis]) > 0) {						// if this axis is participating in the move
 			jerk = cm.a[axis].jerk_max / fabs(bf->unit[axis]);
+			//float j_peak = (1.64224*(800000)^2)/(v_end-v_start);
+//			jerk = cm.a[axis].jerk_max / (bf->unit[axis] * bf->unit[axis]);
 			if (jerk < bf->jerk) {
 				bf->jerk = jerk;
 				bf->jerk_axis = axis;						// +++ diagnostic
@@ -408,6 +402,7 @@ static void _calc_jerk(mpBuf_t *bf)
 //	mm.z_jerk_scaled = bf->jerk * fabs(bf->unit[AXIS_Z]);
 	// +++ to here
 
+//	bf->jerk = sqrt(cm.a[bf->jerk_axis].jerk_max);
 //	bf->jerk = cm.a[bf->jerk_axis].jerk_max;
 	bf->jerk *= JERK_MULTIPLIER;							// goose it!
 #endif	// __REVISED_JERK
