@@ -141,10 +141,13 @@ static void _application_init(void)
 	PMIC_EnableLowLevel();
 	sei();							// enable global interrupts
 	rpt_print_system_ready_message();// (LAST) announce system is ready
+	
+	// ++++ diagnostics
 #ifdef __LOG_ZOID
-	printf("seg, len, Vi, Vt, Vx, Tnai, Tmov, Tmin, Treal, exit\n");	// ++++ diagnostic
+	printf("seg, len, Vi, Vt, Vx, Tnai, Tmov, Tmin, Treal, exit\n");
 #endif
-	printf("typ, seg, len, head, body, tail, Vi, Vt, Vx, Tmov, U[z], jerk, jerk_axis\n"); // ++++ diagnostic
+//	printf("typ, seg, len, head, body, tail, Vi, Vt, Vx, Tmov, U[z], jerk, jerk_axis\n");
+	printf("seg, head,  body,  tail,  Vi,  Vt,  Vx,  Tmov,  U[z],  jerk,  Vz,  Az,  A2\n");
 }
 
 /*

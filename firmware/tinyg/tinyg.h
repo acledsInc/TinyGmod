@@ -45,7 +45,7 @@
 /****** REVISIONS ******/
 
 #ifndef TINYG_FIRMWARE_BUILD
-#define TINYG_FIRMWARE_BUILD   		439.07	// trapezoid dump and other diagnostics
+#define TINYG_FIRMWARE_BUILD   		439.08	// checkpoint
 
 #endif
 #define TINYG_FIRMWARE_VERSION		0.97					// firmware major version

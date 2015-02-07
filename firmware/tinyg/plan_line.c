@@ -100,6 +100,11 @@ stat_t mp_aline(GCodeState_t *gm_in)
 {
 	mpBuf_t *bf; 						// current move pointer
 
+	// +++ temporary
+	cm.a[AXIS_X].accel_limit = 20000000;
+	cm.a[AXIS_Y].accel_limit = 20000000;
+	cm.a[AXIS_Z].accel_limit = 800000;
+
 	// compute some reusable terms
 	float axis_length[AXES];
 	float axis_square[AXES];
@@ -128,6 +133,9 @@ stat_t mp_aline(GCodeState_t *gm_in)
 	bf->length = length;
 	for (uint8_t axis=0; axis<AXES; axis++) {						// generate the unit vector
 		bf->unit[axis] = axis_length[axis] / length;
+		if (fabs(bf->unit[axis]) > 0) {
+			bf->unit_flags[axis] = true;
+		}
 	}
 	memcpy(&bf->gm, gm_in, sizeof(GCodeState_t));					// copy model state into planner buffer
 
@@ -424,8 +432,8 @@ static void _calculate_jerk(mpBuf_t *bf)
 /*
  peak_a = 3/8 sqrt(5/2) 3^(1/4) j sqrt((v_1-v_0)/j)
  
- j = -(1.64224 a^2)/(v_0-v_1)
  j = -(128 a^2)/(45 sqrt(3) (v_0-v_1))
+ j = -(1.64224 a^2)/(v_0-v_1)
  
  1.642240765694935507937134308983345651619844981390583114008468...
  
@@ -435,12 +443,19 @@ static void _calculate_jerk(mpBuf_t *bf)
 
 	bf->jerk				current jerk value - may be downgraded
 	bf->jerk_axis			dominant axis affecting jerk 
+	bf->unit[]
 */
 
 static void _scale_jerk_to_acceleration(const float Vi, const float Vt, mpBuf_t *bf)
 {
+	static const float jerk_scale = 1.64224076569;
 	
-	
+	for (uint8_t axis=0; axis < AXES; axis++) {
+		if (bf->unit[axis] > 0) {
+			bf->jerk_temp = jerk_scale * square(cm.a[axis].accel_limit) / (Vt * bf->unit[axis]);
+			bf->jerk = min (bf->jerk, bf->jerk_temp);			
+		}
+	}
 }
 
 /*

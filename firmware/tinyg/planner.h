@@ -162,6 +162,7 @@ typedef struct mpBuffer {			// See Planning Velocity Notes for variable usage
 	uint8_t replannable;			// TRUE if move can be re-planned
 
 	float unit[AXES];				// unit vector for axis scaling & planning
+	uint8_t unit_flags[AXES];		// set true if unit vector term is non-zero
 
 	float length;					// total line length in mm
 	float head_length;
@@ -179,6 +180,7 @@ typedef struct mpBuffer {			// See Planning Velocity Notes for variable usage
 	float braking_velocity;			// current value for braking velocity
 
 	float jerk;						// maximum linear jerk term for this move
+	float jerk_temp;				// ++++
 	uint8_t jerk_axis;				// rate limiting axis vis-a-vis jerk
 
 	float recip_jerk;				// cached value of 1/Jm (used by planning)
@@ -247,10 +249,12 @@ typedef struct mpMoveRuntimeSingleton {	// persistent runtime variables
 	float exit_velocity;
 
 	//+++diagnostics
-	float prev_velocity;
 	float Vz;
 	float Az;
 	float A2;
+	float prev_Vz;
+	float prev_move_time;
+	// ++++ to here
 
 	float segments;					// number of segments in line (also used by arc generation)
 	uint32_t segment_count;			// count of running segments

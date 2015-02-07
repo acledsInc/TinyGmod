@@ -191,8 +191,9 @@ typedef struct GCodeInput {				// Gcode model inputs - meaning depends on contex
 
 typedef struct cmAxis {
 	uint8_t axis_mode;					// see tgAxisMode in gcode.h
-	float feedrate_max;					// max velocity in mm/min or deg/min
 	float velocity_max;					// max velocity in mm/min or deg/min
+	float feedrate_max;					// max velocity in mm/min or deg/min
+	float accel_limit;					// max accel in mm/min^2 or deg/min^2
 	float travel_max;					// max work envelope for soft limits
 	float travel_min;					// min work envelope for soft limits
 	float jerk_max;						// max jerk (Jm) in mm/min^3 divided by 1 million
