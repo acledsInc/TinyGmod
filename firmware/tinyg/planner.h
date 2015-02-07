@@ -179,12 +179,13 @@ typedef struct mpBuffer {			// See Planning Velocity Notes for variable usage
 	float braking_velocity;			// current value for braking velocity
 
 	float jerk;						// maximum linear jerk term for this move
-	float recip_jerk;				// 1/Jm used for planning (computed and cached)
-	float cbrt_jerk;				// cube root of Jm used for planning (computed and cached)
+	uint8_t jerk_axis;				// rate limiting axis vis-a-vis jerk
+
+	float recip_jerk;				// cached value of 1/Jm (used by planning)
+	float cbrt_jerk;				// cached value of cube root of Jm (used by planning)
 
 	// diagnostics
 	float real_move_time;			// +++
-	uint8_t jerk_axis;				// +++ diagnostic: rate limiting axis used to compute jerk for the move
 //	float naiive_move_time;			// +++diagnostic
 
 	GCodeState_t gm;				// Gode model state - passed from model, used by planner and runtime
