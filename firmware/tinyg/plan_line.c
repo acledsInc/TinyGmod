@@ -42,7 +42,8 @@
 // aline planner routines / feedhold planning
 static void _calc_move_times(GCodeState_t *gms, const float axis_length[], const float axis_square[]);
 static void _calc_jerk(mpBuf_t *bf);
-static float _get_junction_vmax(const float a_unit[], const float b_unit[]);
+//static float _get_junction_vmax(const float a_unit[], const float b_unit[]);
+static float _get_junction_vmax(const float vmax, const float a_unit[], const float b_unit[]);
 static void _reset_replannable_list(void);
 
 /* Runtime-specific setters and getters
@@ -142,8 +143,8 @@ stat_t mp_aline(GCodeState_t *gm_in)
 		bf->exit_vmax = 0;
 	//	bf->replannable = false;	// for reference. This is already set to zero by the clear.
 	} else {
-		float junction_velocity = _get_junction_vmax(bf->pv->unit, bf->unit);
-		bf->entry_vmax = min(bf->cruise_vmax, junction_velocity);
+//		float junction_velocity = _get_junction_vmax(bf->pv->unit, bf->unit);
+		bf->entry_vmax = _get_junction_vmax(bf->cruise_vmax, bf->pv->unit, bf->unit);
 		bf->exit_vmax = min(bf->cruise_vmax, (bf->entry_vmax + bf->delta_vmax));
 		bf->replannable = true;
 	}
@@ -608,7 +609,7 @@ static void _reset_replannable_list()
  *	- make the system smart enough to detect which axes are in the code
  */
 
-static float _get_junction_vmax(const float a_unit[], const float b_unit[])
+static float _get_junction_vmax(const float vmax, const float a_unit[], const float b_unit[])
 {
 	float costheta = - (a_unit[AXIS_X] * b_unit[AXIS_X])
 					 - (a_unit[AXIS_Y] * b_unit[AXIS_Y])
@@ -617,7 +618,7 @@ static float _get_junction_vmax(const float a_unit[], const float b_unit[])
 					 - (a_unit[AXIS_B] * b_unit[AXIS_B])
 					 - (a_unit[AXIS_C] * b_unit[AXIS_C]);
 
-	if (costheta < -0.99) { return (10000000); } 		// straight line cases
+	if (costheta < -0.99) { return (vmax); } 			// straight line cases
 	if (costheta > 0.99)  { return (0); } 				// reversal cases
 
 	// Fuse the junction deviations into a vector sum
@@ -644,7 +645,8 @@ static float _get_junction_vmax(const float a_unit[], const float b_unit[])
 	float delta = (sqrt(a_delta) + sqrt(b_delta))/2;
 	float sintheta_over2 = sqrt((1 - costheta)/2);
 	float radius = delta * sintheta_over2 / (1-sintheta_over2);
-	return(sqrt(radius * cm.junction_acceleration));
+//	return(sqrt(radius * cm.junction_acceleration));
+	return(min(vmax, sqrt(radius * cm.junction_acceleration)));
 #endif
 }
 
