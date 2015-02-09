@@ -190,12 +190,12 @@ stat_t mp_exec_aline(mpBuf_t *bf)
 
 //+++ Diagnostics
 /*
-		mr.AZ = Acceleration computed strictly by observed values 
+		mr.AZ = Acceleration computed strictly by observed values
 		mr.A2 is  peak_a = 3/8 sqrt(5/2) 3^(1/4) j sqrt((v_1-v_0)/j)
 */
 
 		mr.Vz = mr.unit[2] * max3(mr.entry_velocity, mr.cruise_velocity, mr.exit_velocity);
-//		mr.Az = (mr.Vz - mr.prev_Vz) / mr.gm.move_time;		
+//		mr.Az = (mr.Vz - mr.prev_Vz) / mr.gm.move_time;
 		mr.Az = (mr.Vz - mr.prev_Vz) / mr.prev_move_time;
 		mr.A2 = 0.78033589692 * mr.jerk * sqrt(fabs(mr.Vz - mr.prev_Vz)/mr.jerk);
 		mr.prev_Vz = mr.Vz;

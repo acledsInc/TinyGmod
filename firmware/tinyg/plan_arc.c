@@ -27,11 +27,7 @@
 #include "plan_arc.h"
 #include "planner.h"
 #include "util.h"
-/*
-#ifdef __cplusplus
-extern "C"{
-#endif
-*/
+
 // Allocate arc planner singleton structure
 
 arc_t arc;
@@ -72,6 +68,37 @@ stat_t cm_arc_feed(float target[], float flags[],// arc endpoints
 				   float radius, 				 // non-zero radius implies radius mode
 				   uint8_t motion_mode)			 // defined motion mode
 {
+	// Trap arc specification errors and other errors
+
+	bool radius_f = fp_NOT_ZERO(cm.gf.arc_radius);		// true if radius arc
+	bool offset_0 = fp_NOT_ZERO(cm.gf.arc_offset[0]);	// true if offset 0 has bee specified in the Gcode block
+	bool offset_1 = fp_NOT_ZERO(cm.gf.arc_offset[1]);
+	bool offset_2 = fp_NOT_ZERO(cm.gf.arc_offset[2]);
+
+	// It's an error to specify both R and any of IJK
+	if(radius_f && (offset_0 || offset_1 || offset_2)) {
+		return (STAT_ARC_SPECIFICATION_ERROR);
+	}
+
+	// For IJK it's an error to specify an irrelevant axis (e.g. K while you're on the XZ plane)
+	if(!radius_f && ((cm.gm.select_plane == CANON_PLANE_XY && !offset_0 && !offset_1) ||
+					 (cm.gm.select_plane == CANON_PLANE_XZ && !offset_0 && !offset_2) ||
+					 (cm.gm.select_plane == CANON_PLANE_YZ && !offset_1 && !offset_2))) {
+		return (STAT_ARC_OFFSETS_MISSING_FOR_SELECTED_PLANE);
+	}
+
+	bool target_X = fp_NOT_ZERO(cm.gf.target[AXIS_X]);	// true if X axis has been specified in the Gcode block
+	bool target_Y = fp_NOT_ZERO(cm.gf.target[AXIS_Y]);
+	bool target_Z = fp_NOT_ZERO(cm.gf.target[AXIS_Z]);
+
+	// If IJK are specified no axis coordinates need to be specified, but if R is specified
+	// at least one axis coordinate needs to be specified (e.g. X while you're on the XZ plane)
+	if(radius_f && ((cm.gm.select_plane == CANON_PLANE_XY && !target_X && !target_Y) ||
+					(cm.gm.select_plane == CANON_PLANE_XZ && !target_X && !target_Z) ||
+					(cm.gm.select_plane == CANON_PLANE_YZ && !target_Y && !target_Z))) {
+		return (STAT_ARC_AXIS_MISSING_FOR_SELECTED_PLANE);
+	}
+
 	// trap zero feed rate condition
 	if ((cm.gm.feed_rate_mode != INVERSE_TIME_MODE) && (fp_ZERO(cm.gm.feed_rate))) {
 		return (STAT_GCODE_FEEDRATE_NOT_SPECIFIED);
@@ -115,8 +142,9 @@ stat_t cm_arc_feed(float target[], float flags[],// arc endpoints
 		arc.plane_axis_1 = AXIS_Z;
 		arc.linear_axis  = AXIS_X;
 	}
-	// determine if this is a full circle arc. Evaluates true if no target is set
-	arc.full_circle = !((uint32_t)flags[arc.plane_axis_0] | (uint32_t)flags[arc.plane_axis_1]);
+	// determine if this is a full circle arc. Evaluates true if no target is set in axis plane
+//	arc.full_circle = !((uint32_t)flags[arc.plane_axis_0] | (uint32_t)flags[arc.plane_axis_1]);
+	arc.full_circle = (fp_ZERO(flags[arc.plane_axis_0]) & fp_ZERO(flags[arc.plane_axis_1]));
 
 	// compute arc runtime values and prep for execution by the callback
 	ritorno(_compute_arc());
@@ -216,7 +244,7 @@ static stat_t _compute_arc()
 	// Compute angular travel and invert if Gcode wants a counterclockwise arc
 	arc.angular_travel = arc.theta_end - arc.theta;
 
-	// If no endpoint was provided interpret it as a full circle.
+	// If no endpoint was provided interpret it as a full circle
 	if (arc.full_circle) {
 		if (cm.gm.motion_mode == MOTION_MODE_CCW_ARC) {
 			arc.angular_travel -= 2*M_PI;
@@ -268,7 +296,8 @@ static stat_t _compute_arc()
 	arc.center_0 = arc.offset[arc.plane_axis_0];
 	arc.center_1 = arc.offset[arc.plane_axis_1];
 
-	arc.gm.target[arc.linear_axis] = arc.position[arc.linear_axis];	// initialize the linear target
+	// initialize the linear target
+	arc.gm.target[arc.linear_axis] = arc.position[arc.linear_axis];
 	return (STAT_OK);
 }
 
@@ -498,11 +527,11 @@ static stat_t _test_arc_soft_limit_plane_axis(float center, uint8_t plane_axis)
 			return (STAT_OK);
 		}
 		if ((center - arc.radius) < cm.a[plane_axis].travel_min) {	// case (2)
-			return (STAT_SOFT_LIMIT_EXCEEDED);
+			return (STAT_SOFT_LIMIT_EXCEEDED_ARC);
 		}
 	}
 	if ((center + arc.radius) > cm.a[plane_axis].travel_max) {		// cases (3) and (4)
-		return (STAT_SOFT_LIMIT_EXCEEDED);
+		return (STAT_SOFT_LIMIT_EXCEEDED_ARC);
 	}
 	return(STAT_OK);
 }
@@ -521,9 +550,3 @@ static stat_t _test_arc_soft_limits()
 	}
 	return(STAT_OK);
 }
-
-/*
-#ifdef __cplusplus
-}
-#endif
-*/

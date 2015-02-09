@@ -2,8 +2,8 @@
  * planner.c - Cartesian trajectory planning and motion execution
  * This file is part of the TinyG project
  *
- * Copyright (c) 2010 - 2014 Alden S. Hart, Jr.
- * Copyright (c) 2012 - 2014 Rob Giseburt
+ * Copyright (c) 2010 - 2015 Alden S. Hart, Jr.
+ * Copyright (c) 2012 - 2015 Rob Giseburt
  *
  * This file ("the software") is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License, version 2 as published by the
@@ -61,11 +61,7 @@
 #include "encoder.h"
 #include "report.h"
 #include "util.h"
-/*
-#ifdef __cplusplus
-extern "C"{
-#endif
-*/
+
 // Allocate planner structures
 
 mpBufferPool_t mb;				// move buffer queue
@@ -207,6 +203,7 @@ void mp_queue_command(void(*cm_exec)(float[], float[]), float *value, float *fla
 	bf->move_type = MOVE_TYPE_COMMAND;
 	bf->bf_func = _exec_command;						// callback to planner queue exec function
 	bf->cm_func = cm_exec;								// callback to canonical machine exec function
+//	bf->replannable = true;           // allow the normal planning to go backward past this zero-speed and zero-length "move"
 
 	for (uint8_t axis = AXIS_X; axis < AXES; axis++) {
 		bf->value_vector[axis] = value[axis];
@@ -474,8 +471,3 @@ uint8_t mp_get_buffer_index(mpBuf_t *bf)
  * TEXT MODE SUPPORT
  * Functions to print variables from the cfgArray table
  ***********************************************************************************/
-/*
-#ifdef __cplusplus
-}
-#endif
-*/
