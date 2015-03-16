@@ -88,22 +88,22 @@ enum xioDevNum_t {		// TYPE:	DEVICE:
 #define XIO_DEV_USART_OFFSET	0			// offset for computing indices
 
 #define XIO_DEV_SPI_COUNT 		2 			// # of SPI devices
-#define XIO_DEV_SPI_OFFSET		XIO_DEV_USART_COUNT	// offset for computing indicies
+#define XIO_DEV_SPI_OFFSET		XIO_DEV_USART_COUNT	// offset for computing indices
 
 #define XIO_DEV_FILE_COUNT		1			// # of FILE devices
 #define XIO_DEV_FILE_OFFSET		(XIO_DEV_USART_COUNT + XIO_DEV_SPI_COUNT) // index into FILES
 
-#define RX_WINDOW_SLOTS	16					// number of readline() input buffers (window slots)
-#define RX_WINDOW_SLOT_SIZE 80				// input buffer length
+#define RX_PACKET_SLOTS	16					// number of readline() input buffers
+#define RX_PACKET_SLOT_SIZE 80				// input buffer length
 #define RX_STREAM_BUFFER_LEN 255			// input buffer for streaming serial mode
 
-enum cmBufferState {						// readline() buffer and slot states
-	BUFFER_IS_FREE = 0,						// buffer (slot) is available
+typedef enum {						        // readline() buffer and slot states
+	BUFFER_IS_FREE = 0,						// buffer (slot) is available (must be 0)
 	BUFFER_IS_FILLING,						// buffer is partially loaded
 	BUFFER_IS_CTRL,							// buffer contains a control line
 	BUFFER_IS_DATA,							// buffer contains a data line
 	BUFFER_IS_PROCESSING					// buffer is in use by the caller
-};
+} cmBufferState;
 
 // Fast accessors
 #define USB ds[XIO_DEV_USB]
@@ -196,9 +196,9 @@ typedef int (*x_putc_t)(char, FILE *);
 typedef void (*x_flow_t)(xioDev_t *d);
 
 typedef struct windowSlot {				// windowing buffer slots
-	uint8_t state;						// state of slot
+	cmBufferState state;				// state of slot
 	uint32_t seqnum;					// sequence number of slot
-	char_t buf[RX_WINDOW_SLOT_SIZE];	// allocated buffer for slot
+	char_t buf[RX_PACKET_SLOT_SIZE];	// allocated buffer for slot
 } slot_t;
 
 typedef struct xioSingleton {
@@ -216,17 +216,17 @@ typedef struct xioSingleton {
 	uint8_t enable_cr;					// enable CR in CRFL expansion on TX (shadow setting for XIO cntrl bits)
 	uint8_t enable_echo;				// enable text-mode echo (shadow setting for XIO cntrl bits)
 	uint8_t enable_flow_control;		// enable XON/XOFF or RTS/CTS flow control (shadow setting for XIO cntrl bits)
-	uint8_t enable_window_mode;			// set true to enable windowing protocol
+	uint8_t enable_packet_mode;			// set true to enable packetized protocol
 
 	// streaming reader
 	uint8_t buf_size;					// persistent size variable
 	uint8_t buf_state;					// holds CTRL or DATA once this is known
 	char_t in_buf[RX_STREAM_BUFFER_LEN];
 
-	// sliding window reader
-	uint8_t slots_free;
+	// packetized reader
+//	uint8_t slots_free;
 	uint32_t next_slot_seqnum;
-	slot_t slot[RX_WINDOW_SLOTS];
+	slot_t slot[RX_PACKET_SLOTS];
 
 	magic_t magic_end;
 } xioSingleton_t;
@@ -261,7 +261,7 @@ void xio_init_assertions(void);
 uint8_t xio_test_assertions(void);
 uint8_t xio_isbusy(void);
 
-uint8_t xio_get_window_slots();
+uint8_t xio_get_packet_slots();
 char *readline(devflags_t *flags, uint16_t *size);	// Note: char_t aliases to char, but is not typedef'd yet
 
 void xio_reset_working_flags(xioDev_t *d);

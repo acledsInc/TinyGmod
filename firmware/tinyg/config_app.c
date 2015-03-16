@@ -470,7 +470,7 @@ const cfgItem_t cfgArray[] PROGMEM = {
 	{ "sys","ec",  _fipn, 0, cfg_print_ec,  get_ui8,   set_ec,    (float *)&xio.enable_cr,			COM_EXPAND_CR },
 	{ "sys","ee",  _fipn, 0, cfg_print_ee,  get_ui8,   set_ee,    (float *)&xio.enable_echo,		COM_ENABLE_ECHO },
 	{ "sys","ex",  _fipn, 0, cfg_print_ex,  get_ui8,   set_ex,    (float *)&xio.enable_flow_control,COM_ENABLE_FLOW_CONTROL },
-	{ "sys","ew",  _fipn, 0, cfg_print_ew,  get_ui8,   set_01,    (float *)&xio.enable_window_mode,COM_ENABLE_WINDOW_MODE },
+	{ "sys","epk", _fipn, 0, cfg_print_epk, get_ui8,   set_01,    (float *)&xio.enable_packet_mode, COM_ENABLE_PACKET_MODE },
 	{ "sys","baud",_fn,   0, cfg_print_baud,get_ui8,   set_baud,  (float *)&xio.usb_baud_rate,		XIO_BAUD_115200 },
 	{ "sys","net", _fipn, 0, cfg_print_net, get_ui8,   set_ui8,   (float *)&cs.network_mode,		NETWORK_MODE },
 
@@ -940,7 +940,7 @@ static stat_t get_rx(nvObj_t *nv)
 static stat_t get_wr(nvObj_t *nv)
 {
 #ifdef __AVR
-	nv->value = (float)xio_get_window_slots();
+	nv->value = (float)xio_get_packet_slots();
 #else
 	nv->value = (float)4;				// ARM always says there are 4 slots available
 #endif
@@ -1016,7 +1016,7 @@ stat_t set_baud_callback(void)
 static const char fmt_ec[] PROGMEM = "[ec]  expand LF to CRLF on TX%6d [0=off,1=on]\n";
 static const char fmt_ee[] PROGMEM = "[ee]  enable echo%18d [0=off,1=on]\n";
 static const char fmt_ex[] PROGMEM = "[ex]  enable flow control%10d [0=off,1=XON/XOFF, 2=RTS/CTS]\n";
-static const char fmt_ew[] PROGMEM = "[ew]  enable serial windowing%6d [0=off,1=on]\n";
+static const char fmt_epk[] PROGMEM = "[epk] enable serial packet mode%4d [0=off,1=on]\n";
 static const char fmt_baud[] PROGMEM = "[baud] USB baud rate%15d [1=9600,2=19200,3=38400,4=57600,5=115200,6=230400]\n";
 static const char fmt_net[] PROGMEM = "[net] network mode%17d [0=master]\n";
 static const char fmt_rx[] PROGMEM = "rx:%d\n";
@@ -1024,7 +1024,7 @@ static const char fmt_rx[] PROGMEM = "rx:%d\n";
 void cfg_print_ec(nvObj_t *nv) { text_print_ui8(nv, fmt_ec);}
 void cfg_print_ee(nvObj_t *nv) { text_print_ui8(nv, fmt_ee);}
 void cfg_print_ex(nvObj_t *nv) { text_print_ui8(nv, fmt_ex);}
-void cfg_print_ew(nvObj_t *nv) { text_print_ui8(nv, fmt_ew);}
+void cfg_print_epk(nvObj_t *nv) { text_print_ui8(nv, fmt_epk);}
 void cfg_print_baud(nvObj_t *nv) { text_print_ui8(nv, fmt_baud);}
 void cfg_print_net(nvObj_t *nv) { text_print_ui8(nv, fmt_net);}
 void cfg_print_rx(nvObj_t *nv) { text_print_ui8(nv, fmt_rx);}

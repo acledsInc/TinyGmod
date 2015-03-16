@@ -78,7 +78,7 @@
 #define COM_EXPAND_CR				false
 #define COM_ENABLE_ECHO				false
 #define COM_ENABLE_FLOW_CONTROL		FLOW_CONTROL_XON		// FLOW_CONTROL_OFF, FLOW_CONTROL_XON, FLOW_CONTROL_RTS
-#define COM_ENABLE_WINDOW_MODE		false
+#define COM_ENABLE_PACKET_MODE		true
 
 //**** DEBUG SETTINGS - enable these from tinyg.h ****
 

@@ -614,8 +614,8 @@ void json_print_response(uint8_t status)
 	}
 	char_t footer_string[NV_FOOTER_LEN];
 
-	if (xio.enable_window_mode) {							// 2 footer styles are supported...
-		sprintf((char *)footer_string, "%d,%d,%d", 2, status, xio_get_window_slots());	//...windowing
+	if (xio.enable_packet_mode) {							// 2 footer styles are supported...
+		sprintf((char *)footer_string, "%d,%d,%d", 2, status, xio_get_packet_slots());	//...packetized
 	} else {
 		sprintf((char *)footer_string, "%d,%d,%d", 1, status, cs.linelen);				//...streaming
 		cs.linelen = 0;										// reset linelen so it's only reported once
