@@ -53,7 +53,7 @@
 
 #define M1_MOTOR_MAP 			AXIS_X				// 1ma
 #define M1_STEP_ANGLE 			1.8					// 1sa
-#define M1_TRAVEL_PER_REV		4.00				// 1tr
+#define M1_TRAVEL_PER_REV		4.02				// 1tr
 #define M1_MICROSTEPS			8					// 1mi		1,2,4,8
 #define M1_POLARITY				0					// 1po		0=normal, 1=reversed
 #define M1_POWER_MODE			MOTOR_POWER_MODE	// 1pm		standard
@@ -61,7 +61,7 @@
 
 #define M2_MOTOR_MAP	 		AXIS_Y
 #define M2_STEP_ANGLE			1.8
-#define M2_TRAVEL_PER_REV		4.00
+#define M2_TRAVEL_PER_REV		4.02
 #define M2_MICROSTEPS			8
 #define M2_POLARITY				1
 #define M2_POWER_MODE			MOTOR_POWER_MODE
@@ -69,7 +69,7 @@
 
 #define M3_MOTOR_MAP			AXIS_Z
 #define M3_STEP_ANGLE			1.8
-#define M3_TRAVEL_PER_REV		4.00
+#define M3_TRAVEL_PER_REV		4.02
 #define M3_MICROSTEPS			8
 #define M3_POLARITY				1
 #define M3_POWER_MODE			MOTOR_POWER_MODE
